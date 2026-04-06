@@ -9,8 +9,9 @@ import { trackUserActivity } from './admin.js';
 import { renderReminders } from './reminders.js';
 import { checkSubscriptionStatus, initSubscription, renderBlockScreen, processReminders as processSubReminders, cleanupExpiredAccounts, renderSubscriptionInfo, getSubscription, generatePaymentLink, redeemPromoCode, activateSubscription } from './subscription.js';
 import { renderWearables, getConnectionStatus, startBreathingCoach } from './wearables.js';
+import { renderHome } from './home.js';
 
-let _currentTab = 'fitness';
+let _currentTab = 'home';
 let _moreSheetOpen = false;
 
 // ── Patient Profile Helpers ──────────────────────────────────────────
@@ -38,17 +39,22 @@ export function showToast(msg, duration = 2500) {
   }, duration);
 }
 
-// ── Navigation Tabs (5 primary: Metas, Fitness, Nutricion, Estres, Mas) ──
+// ── Navigation Tabs (5 primary — research-backed: Home, Fitness, Nutricion, Citas, Metas)
+// Follows Apple Fitness/Nike/Strava pattern: Home first, core features accessible in 1 tap
 const PRIMARY_TABS = [
+  { id: 'home',         label: () => 'Inicio' },
   { id: 'fitness',      label: () => 'Fitness' },
   { id: 'nutrition',    label: () => 'Nutricion' },
   { id: 'appointments', label: () => 'Citas' },
-  { id: 'stress',       label: () => 'Bienestar' },
-  { id: 'more',         label: () => 'Mas...' },
+  { id: 'habits',       label: () => 'Metas' },
 ];
 
 // Icons — outline (inactive) and filled (active) variants
 const ICONS = {
+  home: {
+    outline: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>`,
+    filled:  `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 11-1.06 1.06l-.22-.22V19.5a1.5 1.5 0 01-1.5 1.5h-4.25a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75v4.5a.75.75 0 01-.75.75H5.56a1.5 1.5 0 01-1.5-1.5v-6.13l-.22.22a.75.75 0 01-1.06-1.06l8.69-8.69z"/></svg>`,
+  },
   habits: {
     outline: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
     filled:  `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>`,
@@ -87,15 +93,12 @@ const ICONS = {
 
 const CHEVRON_RIGHT = `<svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>`;
 
-// ── Build bottom nav (5 tabs) ─────────────────────────────────────────
+// ── Build bottom nav (5 direct tabs — no "more" sheet) ──────────────────
 function buildNav() {
   const nav = document.querySelector('#bottom-nav > div');
-  const isMoreActive = ['habits', 'reminders', 'settings', 'wearables'].includes(_currentTab);
 
   nav.innerHTML = PRIMARY_TABS.map(tab => {
-    const isActive = tab.id === 'more'
-      ? isMoreActive
-      : tab.id === _currentTab;
+    const isActive = tab.id === _currentTab;
     const iconSet = ICONS[tab.id];
     const icon = isActive ? iconSet.filled : iconSet.outline;
 
@@ -109,14 +112,7 @@ function buildNav() {
   }).join('');
 
   nav.querySelectorAll('.nav-tab-item').forEach(item => {
-    item.onclick = () => {
-      if (item.dataset.tab === 'more') {
-        openMoreSheet();
-      } else {
-        closeMoreSheet();
-        navigateTo(item.dataset.tab);
-      }
-    };
+    item.onclick = () => navigateTo(item.dataset.tab);
   });
 }
 
@@ -233,6 +229,7 @@ async function navigateTo(tab) {
   main.innerHTML = `<div class="flex items-center justify-center py-20"><div class="flex gap-1"><div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay:0ms"></div><div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay:150ms"></div><div class="w-2 h-2 rounded-full bg-primary animate-bounce" style="animation-delay:300ms"></div></div></div>`;
 
   switch (tab) {
+    case 'home':         await renderHome(main); break;
     case 'habits':       await renderHabits(main); break;
     case 'fitness':      await renderFitness(main); break;
     case 'nutrition':    renderNutrition(main); break;
@@ -498,7 +495,7 @@ function _enterApp(authScreen) {
     document.getElementById('app').classList.remove('hidden');
     trackUserActivity();
     buildNav();
-    navigateTo('fitness');
+    navigateTo('home');
     // Prompt existing users who haven't set allergies
     _checkAllergyPrompt();
     // Background subscription tasks
