@@ -1812,7 +1812,7 @@ export function renderWearables(container) {
 
   // Back button
   container.querySelector('#wearable-back').onclick = function () {
-    if (window._dyaNav) window._dyaNav.navigateTo('habits');
+    if (window._dyaNav) window._dyaNav.navigateTo('fitness');
   };
 
   // Tab switching
@@ -1843,9 +1843,44 @@ function _renderDashboard(el, st) {
   var stressData = analyzeStressLevel(hrv, r.heartRate);
   var hrZone = _getHRZone(r.heartRate);
 
+  var status = getConnectionStatus();
+  var gfitConnected = _isGoogleFitConnected();
+
   el.innerHTML =
     // Legal disclaimer banner
     _getDisclaimerBanner() +
+
+    // ══ QUICK CONNECT PANEL (shown when no device connected) ══
+    (!status.connected && !_simulatorActive ?
+    '<div class="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-4 mb-3 shadow-lg">' +
+      '<div class="flex items-center gap-3 mb-3">' +
+        '<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl backdrop-blur-sm">\u{1F4F1}</div>' +
+        '<div class="flex-1">' +
+          '<h3 class="text-white font-black text-sm">Conecta tu dispositivo</h3>' +
+          '<p class="text-white/60 text-[10px]">Banda de pecho, reloj o simulador</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-2 mb-2">' +
+        '<button id="dash-ble-connect" class="py-3 rounded-xl bg-white/20 backdrop-blur-sm text-white text-xs font-bold flex flex-col items-center gap-1 active:scale-95 transition-transform">' +
+          '<span class="text-xl">\u{1F493}</span>' +
+          '<span>Banda de Pecho</span>' +
+          '<span class="text-[9px] text-white/50">CycPlus H2 / BLE</span>' +
+        '</button>' +
+        '<button id="dash-gfit-connect" class="py-3 rounded-xl bg-white/20 backdrop-blur-sm text-white text-xs font-bold flex flex-col items-center gap-1 active:scale-95 transition-transform">' +
+          '<span class="text-xl">\u{231A}</span>' +
+          '<span>Reloj / Banda</span>' +
+          '<span class="text-[9px] text-white/50">Via Google Fit</span>' +
+        '</button>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-2">' +
+        '<button id="dash-sim-cicplus" class="py-2.5 rounded-xl bg-white/10 text-white/80 text-[10px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform">' +
+          '\u{1F9EA} Simular Banda' +
+        '</button>' +
+        '<button id="dash-sim-colmi" class="py-2.5 rounded-xl bg-white/10 text-white/80 text-[10px] font-semibold flex items-center justify-center gap-1 active:scale-95 transition-transform">' +
+          '\u{1F9EA} Simular Reloj' +
+        '</button>' +
+      '</div>' +
+    '</div>' : '') +
 
     // Heart Rate hero card
     '<div class="bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl p-4 mb-3 shadow-lg shadow-red-500/20">' +
@@ -1954,6 +1989,41 @@ function _renderDashboard(el, st) {
 
   // Render mode selector (appends to el, binds its own events)
   _renderModeSelector(el, st);
+
+  // ── Dashboard Quick Connect Buttons ──
+  var dashBleBtn = el.querySelector('#dash-ble-connect');
+  if (dashBleBtn) {
+    dashBleBtn.onclick = async function () {
+      dashBleBtn.innerHTML = '<span class="text-xl animate-pulse">\u{1F493}</span><span>Buscando...</span><span class="text-[9px] text-white/50">Enciende tu banda</span>';
+      var success = await connectDevice('cicplus_h2', true);
+      if (success) {
+        showToast('Banda conectada exitosamente');
+        _renderDashboard(el, _loadState());
+      } else {
+        dashBleBtn.innerHTML = '<span class="text-xl">\u{1F493}</span><span>Reintentar</span><span class="text-[9px] text-white/50">CycPlus H2 / BLE</span>';
+      }
+    };
+  }
+  var dashGfitBtn = el.querySelector('#dash-gfit-connect');
+  if (dashGfitBtn) {
+    dashGfitBtn.onclick = function () {
+      connectGoogleFit();
+    };
+  }
+  var dashSimCicplus = el.querySelector('#dash-sim-cicplus');
+  if (dashSimCicplus) {
+    dashSimCicplus.onclick = function () {
+      startSimulator('cicplus_h2');
+      _renderDashboard(el, _loadState());
+    };
+  }
+  var dashSimColmi = el.querySelector('#dash-sim-colmi');
+  if (dashSimColmi) {
+    dashSimColmi.onclick = function () {
+      startSimulator('colmi_p17');
+      _renderDashboard(el, _loadState());
+    };
+  }
 }
 
 function _vitalCardId(id, icon, title, value, valueColor, gradient) {
