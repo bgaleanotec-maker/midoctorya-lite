@@ -1,0 +1,24 @@
+{
+  "name": "MiDoctorYa Lite",
+  "short_name": "DoctorYa",
+  "description": "Tu plataforma integral de bienestar: fitness con GIFs 3D, nutricion IA, manejo del estres y citas medicas",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366F1",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "img/banner-promo.png", "sizes": "1200x630", "type": "image/png", "form_factor": "wide" },
+    { "src": "img/social-square.png", "sizes": "1080x1080", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "categories": ["health", "fitness", "medical"],
+  "lang": "es",
+  "scope": "/"
+}

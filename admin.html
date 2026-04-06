@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiDoctorYa - Admin Panel</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { DEFAULT: '#0f172a', light: '#1e3a5f' },
+            primary: { DEFAULT: '#6366F1', light: '#818CF8' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+    .gradient-navy { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+    .gradient-primary { background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); }
+    .gradient-accent { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+    .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease forwards; }
+    .animate-delay-1 { animation-delay: 100ms; opacity: 0; }
+    .animate-delay-2 { animation-delay: 200ms; opacity: 0; }
+    .animate-delay-3 { animation-delay: 300ms; opacity: 0; }
+    .tab-active { border-bottom: 2px solid #6366F1; color: #6366F1; font-weight: 700; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #9CA3AF; }
+    input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #CBD5E1; border-radius: 24px; transition: 0.3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background: #10B981; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+    .section-collapse { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+    .section-collapse.open { max-height: 5000px; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- PIN Screen -->
+  <div id="pin-screen" class="min-h-screen flex flex-col">
+    <div class="gradient-navy text-white px-5 pt-14 pb-10 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <p class="text-xs text-white/40 mb-1">MiDoctorYa</p>
+      <h1 class="text-2xl font-bold">Panel de Administraci&oacute;n</h1>
+      <p class="text-sm text-white/50 mt-1">Gesti&oacute;n de usuarios y configuraci&oacute;n</p>
+    </div>
+    <div class="flex-1 flex items-start justify-center px-4 -mt-5">
+      <div class="bg-white rounded-2xl shadow-lg p-8 text-center w-full max-w-sm animate-fade-in">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-3xl shadow-lg">&#x1F510;</div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Acceso Restringido</h3>
+        <p class="text-sm text-gray-400 mb-5">Ingresa el PIN de administrador</p>
+        <input type="password" id="admin-pin" maxlength="4" class="w-36 mx-auto block text-center text-2xl tracking-[0.5em] bg-gray-100 rounded-xl py-3 px-4 border border-gray-200" placeholder="····">
+        <button id="pin-submit" class="mt-5 w-full py-3 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Acceder</button>
+        <p id="pin-error" class="text-red-500 text-xs mt-3 hidden">PIN incorrecto</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard (hidden) -->
+  <div id="admin-dashboard" class="hidden">
+    <!-- Header -->
+    <div class="gradient-navy text-white px-5 pt-10 pb-8 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-xs text-white/40 mb-1">MiDoctorYa Admin</p>
+          <h1 class="text-xl font-bold">Dashboard</h1>
+        </div>
+        <button id="admin-logout" class="px-4 py-2 rounded-lg bg-white/10 text-white/70 text-xs font-semibold hover:bg-white/20 transition">Cerrar Sesi&oacute;n</button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="px-4 -mt-4 mb-5">
+      <div class="grid grid-cols-3 gap-2" id="stats-cards"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="px-4 mb-4">
+      <div class="flex border-b border-gray-200 overflow-x-auto" id="admin-tabs" style="scrollbar-width:none;">
+        <button data-tab="users" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-active transition whitespace-nowrap px-3">Usuarios</button>
+        <button data-tab="mp-balance" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Balance MP</button>
+        <button data-tab="subscriptions" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Suscripciones</button>
+        <button data-tab="api-config" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">API Config</button>
+        <button data-tab="guide" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Gu&iacute;a</button>
+        <button data-tab="env" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Variables</button>
+        <button data-tab="promo-codes" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Promos</button>
+        <button data-tab="app-config" class="flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3">Config App</button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="px-4 pb-10" id="tab-content"></div>
+  </div>
+
+  <script>
+    (function () {
+      var ADMIN_PIN = '2835';
+      var CONFIG_KEY = 'dya_admin_config';
+      var USERS_KEY = 'dya_admin_users';
+      var CONDITIONS_KEY = 'dya_config_conditions';
+      var ALLERGIES_KEY = 'dya_config_allergies';
+      var FOOD_RULES_KEY = 'dya_config_food_rules';
+      var SPECIALTIES_KEY = 'dya_config_specialties';
+      var EXERCISE_RULES_KEY = 'dya_config_exercise_rules';
+      var DOCTORS_KEY = 'dya_doctors_list';
+      var currentTab = 'users';
+
+      // ========== SEED DEFAULTS ==========
+      function seedDefaults() {
+        if (!localStorage.getItem(CONDITIONS_KEY)) {
+          localStorage.setItem(CONDITIONS_KEY, JSON.stringify([
+            { name: 'Diabetes', icon: '🩸', active: true },
+            { name: 'Hipertensi\u00f3n', icon: '❤️‍🩹', active: true },
+            { name: 'Asma', icon: '🫁', active: true },
+            { name: 'Enfermedad card\u00edaca', icon: '🫀', active: true },
+            { name: 'Enfermedad renal', icon: '🫘', active: true },
+            { name: 'Artritis', icon: '🦴', active: true },
+            { name: 'Osteoporosis', icon: '🦠', active: true },
+            { name: 'Hipotiroidismo', icon: '🦋', active: true },
+            { name: 'Anemia', icon: '💉', active: true },
+            { name: 'EPOC', icon: '🌬️', active: true }
+          ]));
+        }
+        if (!localStorage.getItem(ALLERGIES_KEY)) {
+          localStorage.setItem(ALLERGIES_KEY, JSON.stringify([
+            { name: 'Man\u00ed/Cacahuate', icon: '🥜', active: true },
+            { name: 'Frutos secos', icon: '🌰', active: true },
+            { name: 'Mariscos', icon: '🦐', active: true },
+            { name: 'L\u00e1cteos/Lactosa', icon: '🥛', active: true },
+            { name: 'Gluten/Trigo', icon: '🌾', active: true },
+            { name: 'Huevo', icon: '🥚', active: true },
+            { name: 'Soya', icon: '🫘', active: true },
+            { name: 'Medicamentos', icon: '💊', active: true }
+          ]));
+        }
+        if (!localStorage.getItem(SPECIALTIES_KEY)) {
+          localStorage.setItem(SPECIALTIES_KEY, JSON.stringify([
+            'Acompa\u00f1amiento Fitness',
+            'Nutrici\u00f3n',
+            'Psicolog\u00eda',
+            'Medicina General',
+            'Cardiolog\u00eda',
+            'Endocrinolog\u00eda'
+          ]));
+        }
+        if (!localStorage.getItem(FOOD_RULES_KEY)) {
+          localStorage.setItem(FOOD_RULES_KEY, JSON.stringify({
+            'Diabetes': {
+              recommended: [
+                { food: 'Avena', reason: 'Fibra soluble estabiliza glucosa' },
+                { food: 'Legumbres', reason: 'Bajo \u00edndice gluc\u00e9mico, alta fibra' },
+                { food: 'Verduras de hoja verde', reason: 'Bajas en carbohidratos, ricas en nutrientes' },
+                { food: 'Pescado (salm\u00f3n, sardinas)', reason: 'Omega-3 reduce inflamaci\u00f3n' },
+                { food: 'Nueces y almendras', reason: 'Grasas saludables, bajo \u00edndice gluc\u00e9mico' }
+              ],
+              notRecommended: [
+                { food: 'Az\u00facar refinada', reason: 'Eleva glucosa r\u00e1pidamente' },
+                { food: 'Pan blanco', reason: 'Alto \u00edndice gluc\u00e9mico, poca fibra' },
+                { food: 'Bebidas azucaradas', reason: 'Picos de glucosa inmediatos' },
+                { food: 'Dulces y pasteles', reason: 'Az\u00facares simples, grasas trans' },
+                { food: 'Arroz blanco en exceso', reason: 'Alto \u00edndice gluc\u00e9mico' }
+              ]
+            },
+            'Hipertensi\u00f3n': {
+              recommended: [
+                { food: 'Banano/Pl\u00e1tano', reason: 'Alto en potasio, regula presi\u00f3n arterial' },
+                { food: 'Espinacas', reason: 'Magnesio y potasio para vasos sangu\u00edneos' },
+                { food: 'Ajo', reason: 'Propiedades vasodilatadoras naturales' },
+                { food: 'Remolacha/Betabel', reason: 'Nitratos naturales reducen presi\u00f3n' },
+                { food: 'Yogur natural sin az\u00facar', reason: 'Calcio y probi\u00f3ticos cardiovasculares' }
+              ],
+              notRecommended: [
+                { food: 'Sal en exceso', reason: 'Retenci\u00f3n de l\u00edquidos, sube presi\u00f3n' },
+                { food: 'Embutidos', reason: 'Alto contenido de sodio y nitratos' },
+                { food: 'Enlatados', reason: 'Sodio como conservante en exceso' },
+                { food: 'Quesos curados', reason: 'Muy altos en sodio' },
+                { food: 'Alcohol', reason: 'Eleva presi\u00f3n arterial directamente' }
+              ]
+            },
+            'Enfermedad renal': {
+              recommended: [
+                { food: 'Manzana', reason: 'Baja en potasio y f\u00f3sforo' },
+                { food: 'Repollo/Col', reason: 'Bajo en potasio, rico en vitaminas' },
+                { food: 'Pimiento rojo', reason: 'Antioxidantes sin exceso de potasio' },
+                { food: 'Clara de huevo', reason: 'Prote\u00edna de alta calidad, bajo f\u00f3sforo' },
+                { food: 'Cebolla', reason: 'Baja en potasio, da sabor sin sal' }
+              ],
+              notRecommended: [
+                { food: 'Banano/Pl\u00e1tano', reason: 'Muy alto en potasio' },
+                { food: 'Tomate', reason: 'Alto en potasio' },
+                { food: 'Chocolate', reason: 'Alto en f\u00f3sforo y potasio' },
+                { food: 'Frutos secos', reason: 'Exceso de f\u00f3sforo y potasio' },
+                { food: 'Refrescos oscuros', reason: 'Altos en \u00e1cido fosf\u00f3rico' }
+              ]
+            },
+            'Asma': {
+              recommended: [
+                { food: 'Manzana', reason: 'Quercetina antiinflamatoria para v\u00edas a\u00e9reas' },
+                { food: 'Jengibre', reason: 'Broncodilatador natural, antiinflamatorio' },
+                { food: 'C\u00farcuma', reason: 'Curcumina reduce inflamaci\u00f3n bronquial' },
+                { food: 'Pescados grasos', reason: 'Omega-3 reduce inflamaci\u00f3n pulmonar' },
+                { food: 'Espinacas', reason: 'Magnesio relaja m\u00fasculos bronquiales' }
+              ],
+              notRecommended: [
+                { food: 'Sulfitos (vino, frutos secos procesados)', reason: 'Desencadenante com\u00fan de asma' },
+                { food: 'Mariscos', reason: 'Al\u00e9rgeno com\u00fan, agrava s\u00edntomas' },
+                { food: 'Alimentos muy fr\u00edos', reason: 'Pueden provocar broncoespasmo' },
+                { food: 'Comida chatarra procesada', reason: 'Conservantes y aditivos inflamatorios' },
+                { food: 'L\u00e1cteos enteros en exceso', reason: 'Pueden aumentar producci\u00f3n de moco' }
+              ]
+            }
+          }));
+        }
+        if (!localStorage.getItem(EXERCISE_RULES_KEY)) {
+          localStorage.setItem(EXERCISE_RULES_KEY, JSON.stringify({
+            'Enfermedad card\u00edaca': [
+              { restriction: 'Evitar ejercicio de alta intensidad sin supervisi\u00f3n', severity: 'Alta' },
+              { restriction: 'Monitorear frecuencia card\u00edaca, no superar 120 bpm', severity: 'Media' },
+              { restriction: 'No realizar ejercicios isom\u00e9tricos prolongados', severity: 'Media' },
+              { restriction: 'Evitar ambientes extremadamente fr\u00edos o calientes', severity: 'Alta' }
+            ],
+            'Asma': [
+              { restriction: 'Evitar ejercicio en ambientes fr\u00edos o con poluci\u00f3n', severity: 'Media' },
+              { restriction: 'Llevar siempre inhalador de rescate', severity: 'Alta' },
+              { restriction: 'Calentamiento progresivo de al menos 10 minutos', severity: 'Media' },
+              { restriction: 'Preferir nataci\u00f3n sobre running en clima seco', severity: 'Baja' }
+            ],
+            'Enfermedad renal': [
+              { restriction: 'Evitar ejercicio extenuante que cause deshidrataci\u00f3n', severity: 'Alta' },
+              { restriction: 'Hidrataci\u00f3n controlada seg\u00fan indicaci\u00f3n m\u00e9dica', severity: 'Alta' },
+              { restriction: 'No realizar actividades de impacto si hay anemia asociada', severity: 'Media' }
+            ],
+            'Artritis': [
+              { restriction: 'Evitar ejercicios de alto impacto (correr, saltar)', severity: 'Alta' },
+              { restriction: 'Preferir ejercicio acu\u00e1tico para reducir carga articular', severity: 'Media' },
+              { restriction: 'No forzar articulaciones inflamadas', severity: 'Alta' },
+              { restriction: 'Realizar estiramientos suaves antes de actividad', severity: 'Baja' }
+            ],
+            'Osteoporosis': [
+              { restriction: 'Evitar movimientos bruscos de flexi\u00f3n/torsi\u00f3n espinal', severity: 'Alta' },
+              { restriction: 'No realizar saltos de altura', severity: 'Alta' },
+              { restriction: 'Ejercicios de equilibrio para prevenir ca\u00eddas', severity: 'Media' },
+              { restriction: 'Caminata y pesas livianas son recomendados', severity: 'Baja' }
+            ]
+          }));
+        }
+      }
+
+      seedDefaults();
+
+      // ========== HELPERS ==========
+      function getJSON(key) {
+        try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+      }
+      function setJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+      function getUsers() { return getJSON(USERS_KEY) || []; }
+      function saveUsers(u) { setJSON(USERS_KEY, u); }
+      function getConfig() { return getJSON(CONFIG_KEY) || {}; }
+      function saveConfig(c) { setJSON(CONFIG_KEY, c); }
+      function getConditions() { return getJSON(CONDITIONS_KEY) || []; }
+      function saveConditions(c) { setJSON(CONDITIONS_KEY, c); }
+      function getAllergies() { return getJSON(ALLERGIES_KEY) || []; }
+      function saveAllergies(a) { setJSON(ALLERGIES_KEY, a); }
+      function getSpecialties() { return getJSON(SPECIALTIES_KEY) || []; }
+      function saveSpecialties(s) { setJSON(SPECIALTIES_KEY, s); }
+      function getFoodRules() { return getJSON(FOOD_RULES_KEY) || {}; }
+      function saveFoodRules(r) { setJSON(FOOD_RULES_KEY, r); }
+      function getExerciseRules() { return getJSON(EXERCISE_RULES_KEY) || {}; }
+      function saveExerciseRules(r) { setJSON(EXERCISE_RULES_KEY, r); }
+      function getDoctors() { return getJSON(DOCTORS_KEY) || []; }
+      function saveDoctors(d) { setJSON(DOCTORS_KEY, d); }
+
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      // --- PIN Auth ---
+      var pinScreen = document.getElementById('pin-screen');
+      var dashboard = document.getElementById('admin-dashboard');
+      var pinInput = document.getElementById('admin-pin');
+      var pinError = document.getElementById('pin-error');
+
+      document.getElementById('pin-submit').onclick = checkPin;
+      pinInput.onkeydown = function (e) { if (e.key === 'Enter') checkPin(); };
+
+      function checkPin() {
+        if (pinInput.value === ADMIN_PIN) {
+          pinScreen.classList.add('hidden');
+          dashboard.classList.remove('hidden');
+          renderDashboard();
+        } else {
+          pinError.classList.remove('hidden');
+          pinInput.value = '';
+          pinInput.focus();
+        }
+      }
+
+      document.getElementById('admin-logout').onclick = function () {
+        dashboard.classList.add('hidden');
+        pinScreen.classList.remove('hidden');
+        pinInput.value = '';
+        pinError.classList.add('hidden');
+      };
+
+      // --- Dashboard ---
+      function renderDashboard() {
+        renderStats();
+        renderTabs();
+        renderTabContent();
+      }
+
+      function renderStats() {
+        var users = getUsers();
+        var today = new Date().toISOString().split('T')[0];
+        var todayActive = users.filter(function (u) { return u.lastActive && u.lastActive.startsWith(today); });
+        var totalSessions = users.reduce(function (sum, u) { return sum + (u.sessions || 0); }, 0);
+
+        document.getElementById('stats-cards').innerHTML =
+          '<div class="bg-white rounded-xl shadow-sm p-4 text-center border border-gray-100 animate-fade-in">' +
+            '<p class="text-3xl font-black text-indigo-600">' + users.length + '</p>' +
+            '<p class="text-[10px] text-gray-400 uppercase font-semibold mt-1">Total Usuarios</p>' +
+          '</div>' +
+          '<div class="bg-white rounded-xl shadow-sm p-4 text-center border border-gray-100 animate-fade-in animate-delay-1">' +
+            '<p class="text-3xl font-black text-emerald-600">' + todayActive.length + '</p>' +
+            '<p class="text-[10px] text-gray-400 uppercase font-semibold mt-1">Activos Hoy</p>' +
+          '</div>' +
+          '<div class="bg-white rounded-xl shadow-sm p-4 text-center border border-gray-100 animate-fade-in animate-delay-2">' +
+            '<p class="text-3xl font-black text-amber-600">' + totalSessions + '</p>' +
+            '<p class="text-[10px] text-gray-400 uppercase font-semibold mt-1">Sesiones</p>' +
+          '</div>';
+      }
+
+      // --- Tabs ---
+      function renderTabs() {
+        var tabs = document.querySelectorAll('#admin-tabs button');
+        tabs.forEach(function (btn) {
+          btn.className = btn.dataset.tab === currentTab
+            ? 'flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-active transition whitespace-nowrap px-3'
+            : 'flex-shrink-0 py-3 text-xs sm:text-sm text-center tab-inactive transition whitespace-nowrap px-3';
+          btn.onclick = function () {
+            currentTab = btn.dataset.tab;
+            renderTabs();
+            renderTabContent();
+          };
+        });
+      }
+
+      function renderTabContent() {
+        var container = document.getElementById('tab-content');
+        switch (currentTab) {
+          case 'users': renderUsersTab(container); break;
+          case 'mp-balance': renderMPBalanceTab(container); break;
+          case 'subscriptions': renderSubscriptionsTab(container); break;
+          case 'api-config': renderApiConfigTab(container); break;
+          case 'guide': renderGuideTab(container); break;
+          case 'env': renderEnvTab(container); break;
+          case 'promo-codes': renderPromoCodesTab(container); break;
+          case 'app-config': renderAppConfigTab(container); break;
+        }
+      }
+
+      // --- Users Tab ---
+      function renderUsersTab(container) {
+        var users = getUsers();
+        if (users.length === 0) {
+          container.innerHTML =
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center animate-fade-in">' +
+              '<p class="text-4xl mb-3">&#x1F465;</p>' +
+              '<p class="text-gray-400 text-sm">No hay usuarios registrados a&uacute;n</p>' +
+            '</div>';
+          return;
+        }
+
+        var html = '<div class="space-y-3">';
+        users.forEach(function (u, i) {
+          var isActive = u.status === 'active';
+          var initial = (u.name || 'U')[0].toUpperCase();
+          var borderClass = isActive ? 'border-gray-100' : 'border-red-200 bg-red-50/40';
+          var avatarClass = isActive ? 'bg-gradient-to-br from-indigo-500 to-purple-500' : 'bg-gray-300';
+          var toggleClass = isActive ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100';
+          var toggleLabel = isActive ? 'Desactivar' : 'Activar';
+
+          html +=
+            '<div class="bg-white rounded-xl shadow-sm border ' + borderClass + ' p-4 animate-fade-in" style="animation-delay:' + (i * 60) + 'ms">' +
+              '<div class="flex items-center gap-3">' +
+                '<div class="w-11 h-11 rounded-xl ' + avatarClass + ' flex items-center justify-center text-white font-bold text-sm shrink-0">' + initial + '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                  '<p class="text-sm font-bold text-gray-800 truncate">' + (u.name || 'Sin nombre') + '</p>' +
+                  '<p class="text-[11px] text-gray-400 truncate">' + u.email + '</p>' +
+                  '<div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">' +
+                    (u.phone ? '<span class="text-[10px] text-gray-400">&#x1F4F1; ' + u.phone + '</span>' : '') +
+                    '<span class="text-[10px] text-gray-400">&#x1F4CA; ' + (u.sessions || 0) + ' sesiones</span>' +
+                    (u.lastActive ? '<span class="text-[10px] text-gray-400">&#x1F550; ' + u.lastActive.split('T')[0] + '</span>' : '') +
+                    (u.birthdate ? '<span class="text-[10px] text-gray-400">&#x1F382; ' + u.birthdate + '</span>' : '') +
+                  '</div>' +
+                '</div>' +
+                '<button class="toggle-user text-[10px] px-3 py-1.5 rounded-lg font-bold ' + toggleClass + ' transition shrink-0" data-index="' + i + '">' + toggleLabel + '</button>' +
+              '</div>' +
+            '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+
+        container.querySelectorAll('.toggle-user').forEach(function (btn) {
+          btn.onclick = function () {
+            var users = getUsers();
+            var idx = parseInt(btn.dataset.index);
+            users[idx].status = users[idx].status === 'active' ? 'suspended' : 'active';
+            saveUsers(users);
+            renderDashboard();
+          };
+        });
+      }
+
+      // --- MP Balance Tab ---
+      function renderMPBalanceTab(container) {
+        var cfg = getConfig();
+        var accessToken = cfg['MP_ACCESS_TOKEN'] || '';
+
+        if (!accessToken) {
+          container.innerHTML =
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center animate-fade-in">' +
+              '<p class="text-4xl mb-3">&#x1F4B3;</p>' +
+              '<p class="text-gray-800 font-bold mb-2">Mercado Pago no configurado</p>' +
+              '<p class="text-gray-400 text-sm mb-4">Configura tu Access Token en la pesta&ntilde;a API Config para ver el balance.</p>' +
+              '<button onclick="currentTab=\'api-config\';renderTabs();renderTabContent();" class="px-6 py-2 rounded-xl gradient-primary text-white text-sm font-bold">Ir a API Config</button>' +
+            '</div>';
+          return;
+        }
+
+        container.innerHTML =
+          '<div class="space-y-4 animate-fade-in">' +
+            '<!-- Account Info -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-lg">&#x1F4B0;</div>' +
+                '<div>' +
+                  '<h3 class="font-bold text-gray-800">Balance de Mercado Pago</h3>' +
+                  '<p class="text-xs text-gray-400" id="mp-account-info">Cargando...</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="grid grid-cols-2 gap-3 mb-4" id="mp-balance-cards">' +
+                '<div class="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 text-center">' +
+                  '<p class="text-xs text-emerald-600 font-semibold">Cobros este mes</p>' +
+                  '<p class="text-xl font-black text-emerald-700" id="mp-month-count">--</p>' +
+                  '<p class="text-sm font-bold text-emerald-600" id="mp-month-total">$--</p>' +
+                '</div>' +
+                '<div class="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 text-center">' +
+                  '<p class="text-xs text-blue-600 font-semibold">Mes anterior</p>' +
+                  '<p class="text-xl font-black text-blue-700" id="mp-last-month-count">--</p>' +
+                  '<p class="text-sm font-bold text-blue-600" id="mp-last-month-total">$--</p>' +
+                '</div>' +
+              '</div>' +
+              '<button id="mp-refresh-balance" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">&#x1F504; Verificar Balance</button>' +
+              '<p id="mp-balance-status" class="text-xs text-center mt-2 text-gray-400"></p>' +
+            '</div>' +
+            '<!-- Recent Payments -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center justify-between mb-4">' +
+                '<h3 class="font-bold text-gray-800">&#x1F4CB; Ultimos Pagos</h3>' +
+                '<span class="text-xs text-gray-400" id="mp-payments-count"></span>' +
+              '</div>' +
+              '<div id="mp-payments-list" class="space-y-2">' +
+                '<p class="text-center py-4 text-gray-300 text-sm">Cargando pagos...</p>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+        // Fetch data
+        _fetchMPData(accessToken);
+
+        document.getElementById('mp-refresh-balance').onclick = function() {
+          document.getElementById('mp-balance-status').textContent = 'Actualizando...';
+          _fetchMPData(accessToken);
+        };
+      }
+
+      function _fetchMPData(accessToken) {
+        var serverBase = window.location.origin;
+
+        // Fetch account info
+        fetch(serverBase + '/api/mp/balance?access_token=' + encodeURIComponent(accessToken))
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.error) {
+              document.getElementById('mp-account-info').textContent = 'Error: ' + (data.details || data.error);
+              return;
+            }
+            var info = (data.nickname || '') + ' - ' + (data.email || '') + ' (' + (data.country_id || '') + ')';
+            document.getElementById('mp-account-info').textContent = info;
+            document.getElementById('mp-balance-status').textContent = 'Cuenta conectada correctamente';
+            document.getElementById('mp-balance-status').className = 'text-xs text-center mt-2 text-emerald-500';
+          })
+          .catch(function(err) {
+            document.getElementById('mp-account-info').textContent = 'Error de conexion';
+            document.getElementById('mp-balance-status').textContent = 'Error: ' + err.message;
+            document.getElementById('mp-balance-status').className = 'text-xs text-center mt-2 text-red-500';
+          });
+
+        // Fetch recent payments
+        fetch(serverBase + '/api/mp/payments?access_token=' + encodeURIComponent(accessToken) + '&limit=10')
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.error) {
+              document.getElementById('mp-payments-list').innerHTML =
+                '<p class="text-center py-4 text-red-400 text-sm">Error: ' + esc(data.details || data.error) + '</p>';
+              return;
+            }
+
+            var payments = data.payments || [];
+            document.getElementById('mp-payments-count').textContent = data.total + ' total';
+
+            // Calculate monthly stats
+            var now = new Date();
+            var thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            var lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            var lastMonth = lastMonthDate.getFullYear() + '-' + String(lastMonthDate.getMonth() + 1).padStart(2, '0');
+
+            var thisMonthPayments = payments.filter(function(p) { return p.status === 'approved' && (p.date_approved || p.date_created || '').startsWith(thisMonth); });
+            var lastMonthPayments = payments.filter(function(p) { return p.status === 'approved' && (p.date_approved || p.date_created || '').startsWith(lastMonth); });
+
+            var thisMonthTotal = thisMonthPayments.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+            var lastMonthTotal = lastMonthPayments.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+
+            document.getElementById('mp-month-count').textContent = thisMonthPayments.length + ' pagos';
+            document.getElementById('mp-month-total').textContent = '$' + thisMonthTotal.toLocaleString('es-CO');
+            document.getElementById('mp-last-month-count').textContent = lastMonthPayments.length + ' pagos';
+            document.getElementById('mp-last-month-total').textContent = '$' + lastMonthTotal.toLocaleString('es-CO');
+
+            if (payments.length === 0) {
+              document.getElementById('mp-payments-list').innerHTML =
+                '<p class="text-center py-4 text-gray-300 text-sm">No hay pagos recientes</p>';
+              return;
+            }
+
+            var html = '<div class="overflow-x-auto"><table class="w-full text-xs">' +
+              '<thead><tr class="border-b border-gray-200">' +
+                '<th class="text-left py-2 px-1 text-gray-400 font-semibold">Fecha</th>' +
+                '<th class="text-left py-2 px-1 text-gray-400 font-semibold">Email</th>' +
+                '<th class="text-left py-2 px-1 text-gray-400 font-semibold">Descripcion</th>' +
+                '<th class="text-right py-2 px-1 text-gray-400 font-semibold">Monto</th>' +
+                '<th class="text-center py-2 px-1 text-gray-400 font-semibold">Estado</th>' +
+              '</tr></thead><tbody>';
+
+            payments.forEach(function(p) {
+              var date = (p.date_approved || p.date_created || '').split('T')[0] || '-';
+              var statusColors = {
+                approved: 'bg-emerald-100 text-emerald-700',
+                pending: 'bg-amber-100 text-amber-700',
+                rejected: 'bg-red-100 text-red-700',
+                in_process: 'bg-blue-100 text-blue-700'
+              };
+              var statusLabels = {
+                approved: 'Aprobado',
+                pending: 'Pendiente',
+                rejected: 'Rechazado',
+                in_process: 'En proceso'
+              };
+              var stClass = statusColors[p.status] || 'bg-gray-100 text-gray-500';
+              var stLabel = statusLabels[p.status] || p.status;
+              var plan = '';
+              if (p.external_reference) {
+                var parts = p.external_reference.split('_');
+                if (parts.length >= 3) plan = parts[2];
+              }
+
+              html += '<tr class="border-b border-gray-50">' +
+                '<td class="py-2 px-1 text-gray-600">' + date + '</td>' +
+                '<td class="py-2 px-1 text-gray-600 truncate max-w-[100px]">' + esc(p.payer_email || '-') + '</td>' +
+                '<td class="py-2 px-1 text-gray-600 truncate max-w-[120px]">' + esc(plan || p.description || '-') + '</td>' +
+                '<td class="py-2 px-1 text-gray-800 font-bold text-right">$' + (p.amount || 0).toLocaleString('es-CO') + '</td>' +
+                '<td class="py-2 px-1 text-center"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold ' + stClass + '">' + stLabel + '</span></td>' +
+              '</tr>';
+            });
+            html += '</tbody></table></div>';
+            document.getElementById('mp-payments-list').innerHTML = html;
+          })
+          .catch(function(err) {
+            document.getElementById('mp-payments-list').innerHTML =
+              '<p class="text-center py-4 text-red-400 text-sm">Error: ' + err.message + '</p>';
+          });
+      }
+
+      // --- Subscriptions Tab ---
+      function renderSubscriptionsTab(container) {
+        container.innerHTML =
+          '<div class="space-y-4 animate-fade-in">' +
+            '<!-- Lookup user subscription -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-lg">&#x1F50D;</div>' +
+                '<div>' +
+                  '<h3 class="font-bold text-gray-800">Consultar Suscripci&oacute;n</h3>' +
+                  '<p class="text-xs text-gray-400">Buscar estado de suscripci&oacute;n por email</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex gap-2 mb-3">' +
+                '<input type="email" id="sub-lookup-email" placeholder="usuario@email.com" class="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+                '<button id="sub-lookup-btn" class="px-4 py-3 rounded-xl gradient-primary text-white text-sm font-bold shrink-0">Buscar</button>' +
+              '</div>' +
+              '<div id="sub-lookup-result" class="hidden"></div>' +
+            '</div>' +
+            '<!-- Simulate States -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">&#x1F9EA;</div>' +
+                '<div>' +
+                  '<h3 class="font-bold text-gray-800">Probar Suscripci&oacute;n</h3>' +
+                  '<p class="text-xs text-gray-400">Simular estados de suscripci&oacute;n para testing</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="mb-3">' +
+                '<label class="block text-xs font-semibold text-gray-600 mb-1">Email del usuario</label>' +
+                '<input type="email" id="sub-sim-email" placeholder="usuario@email.com" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+              '<div class="grid grid-cols-2 gap-2 mb-3">' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition" data-state="trial">&#x23F3; Trial (7 dias)</button>' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 hover:bg-emerald-100 transition" data-state="active">&#x2705; Activa</button>' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-bold border border-amber-200 hover:bg-amber-100 transition" data-state="expired">&#x26A0;&#xFE0F; Vencida</button>' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-orange-50 text-orange-700 text-xs font-bold border border-orange-200 hover:bg-orange-100 transition" data-state="grace">&#x1F550; Gracia (5 dias)</button>' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-bold border border-red-200 hover:bg-red-100 transition" data-state="blocked">&#x1F6AB; Bloqueada</button>' +
+                '<button class="sub-sim-btn py-2.5 rounded-xl bg-gray-100 text-gray-500 text-xs font-bold border border-gray-200 hover:bg-gray-200 transition" data-state="deleted">&#x1F5D1;&#xFE0F; Eliminada</button>' +
+              '</div>' +
+              '<p id="sub-sim-result" class="text-xs text-center hidden"></p>' +
+            '</div>' +
+            '<!-- Extend Subscription -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white text-lg">&#x2795;</div>' +
+                '<div>' +
+                  '<h3 class="font-bold text-gray-800">Extender Suscripci&oacute;n</h3>' +
+                  '<p class="text-xs text-gray-400">Agregar d&iacute;as manualmente a un usuario</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex gap-2 mb-3">' +
+                '<input type="email" id="sub-ext-email" placeholder="usuario@email.com" class="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+                '<select id="sub-ext-plan" class="px-3 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+                  '<option value="mensual">Mensual (30d)</option>' +
+                  '<option value="trimestral">Trimestral (90d)</option>' +
+                  '<option value="anual">Anual (365d)</option>' +
+                '</select>' +
+              '</div>' +
+              '<button id="sub-ext-btn" class="w-full py-3 rounded-xl gradient-accent text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Extender Suscripci&oacute;n</button>' +
+              '<p id="sub-ext-result" class="text-xs text-center mt-2 hidden"></p>' +
+            '</div>' +
+            '<!-- Test Reminders -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<div class="flex items-center gap-3 mb-4">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-lg">&#x1F514;</div>' +
+                '<div>' +
+                  '<h3 class="font-bold text-gray-800">Probar Recordatorios</h3>' +
+                  '<p class="text-xs text-gray-400">Enviar un recordatorio de prueba</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex gap-2 mb-3">' +
+                '<input type="email" id="sub-rem-email" placeholder="Email destino" class="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+                '<input type="text" id="sub-rem-phone" placeholder="+57300..." class="w-36 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<button id="sub-test-email" class="py-2.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition">&#x1F4E7; Probar Email</button>' +
+                '<button id="sub-test-wa" class="py-2.5 rounded-xl bg-green-50 text-green-700 text-xs font-bold border border-green-200 hover:bg-green-100 transition">&#x1F4F1; Probar WhatsApp</button>' +
+              '</div>' +
+              '<p id="sub-rem-result" class="text-xs text-center mt-2 hidden"></p>' +
+            '</div>' +
+            '<!-- Subscription Flow Diagram -->' +
+            '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+              '<h3 class="font-bold text-gray-800 mb-3">&#x1F4CA; Flujo de Suscripci&oacute;n</h3>' +
+              '<div class="flex items-center gap-1 overflow-x-auto text-[10px] font-bold pb-2">' +
+                '<div class="px-3 py-2 rounded-lg bg-blue-100 text-blue-700 whitespace-nowrap">Trial (7d)</div>' +
+                '<span class="text-gray-300">&#x2192;</span>' +
+                '<div class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-700 whitespace-nowrap">Activa</div>' +
+                '<span class="text-gray-300">&#x2192;</span>' +
+                '<div class="px-3 py-2 rounded-lg bg-amber-100 text-amber-700 whitespace-nowrap">Vencida</div>' +
+                '<span class="text-gray-300">&#x2192;</span>' +
+                '<div class="px-3 py-2 rounded-lg bg-orange-100 text-orange-700 whitespace-nowrap">Gracia (5d)</div>' +
+                '<span class="text-gray-300">&#x2192;</span>' +
+                '<div class="px-3 py-2 rounded-lg bg-red-100 text-red-700 whitespace-nowrap">Bloqueada</div>' +
+                '<span class="text-gray-300">&#x2192;</span>' +
+                '<div class="px-3 py-2 rounded-lg bg-gray-100 text-gray-500 whitespace-nowrap">Eliminada (30d)</div>' +
+              '</div>' +
+              '<div class="mt-3 space-y-2 text-xs text-gray-500">' +
+                '<p>&#x2022; <strong>Trial:</strong> 7 d&iacute;as gratis al registrarse.</p>' +
+                '<p>&#x2022; <strong>Activa:</strong> Pago confirmado, acceso completo.</p>' +
+                '<p>&#x2022; <strong>Vencida/Gracia:</strong> 5 d&iacute;as para renovar con acceso limitado.</p>' +
+                '<p>&#x2022; <strong>Bloqueada:</strong> Sin acceso, pantalla de bloqueo.</p>' +
+                '<p>&#x2022; <strong>Eliminada:</strong> 30 d&iacute;as despu&eacute;s, datos borrados.</p>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+        // Bind events
+        _bindSubscriptionEvents();
+      }
+
+      function _bindSubscriptionEvents() {
+        // Lookup
+        document.getElementById('sub-lookup-btn').onclick = function() {
+          var email = document.getElementById('sub-lookup-email').value.trim();
+          if (!email) return;
+          var subKey = 'dya_subscription_' + email;
+          var raw = localStorage.getItem(subKey);
+          var resultDiv = document.getElementById('sub-lookup-result');
+          resultDiv.classList.remove('hidden');
+
+          if (!raw) {
+            resultDiv.innerHTML = '<div class="p-3 rounded-xl bg-gray-50 border border-gray-200 text-center"><p class="text-sm text-gray-400">No se encontr&oacute; suscripci&oacute;n para este email</p></div>';
+            return;
+          }
+
+          try {
+            var sub = JSON.parse(raw);
+            var statusColors = {
+              active: 'bg-emerald-100 text-emerald-700',
+              trial: 'bg-blue-100 text-blue-700',
+              expired: 'bg-amber-100 text-amber-700',
+              grace: 'bg-orange-100 text-orange-700',
+              blocked: 'bg-red-100 text-red-700',
+              deleted: 'bg-gray-100 text-gray-500'
+            };
+            var statusLabels = {
+              active: 'Activa', trial: 'Trial', expired: 'Vencida',
+              grace: 'Gracia', blocked: 'Bloqueada', deleted: 'Eliminada'
+            };
+            var stClass = statusColors[sub.status] || 'bg-gray-100 text-gray-500';
+            var stLabel = statusLabels[sub.status] || sub.status;
+            var expiresDate = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('es-CO') : '-';
+            var startDate = sub.startDate ? new Date(sub.startDate).toLocaleDateString('es-CO') : '-';
+            var planLabels = { mensual: 'Mensual', trimestral: 'Trimestral', anual: 'Anual' };
+
+            resultDiv.innerHTML =
+              '<div class="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2">' +
+                '<div class="flex items-center justify-between">' +
+                  '<span class="text-sm font-bold text-gray-800">' + esc(sub.email) + '</span>' +
+                  '<span class="text-[10px] px-2.5 py-1 rounded-full font-bold ' + stClass + '">' + stLabel + '</span>' +
+                '</div>' +
+                '<div class="grid grid-cols-2 gap-2 text-xs">' +
+                  '<div><span class="text-gray-400">Plan:</span> <span class="font-semibold">' + (planLabels[sub.plan] || sub.plan) + '</span></div>' +
+                  '<div><span class="text-gray-400">Inicio:</span> <span class="font-semibold">' + startDate + '</span></div>' +
+                  '<div><span class="text-gray-400">Vence:</span> <span class="font-semibold">' + expiresDate + '</span></div>' +
+                  '<div><span class="text-gray-400">Pagos:</span> <span class="font-semibold">' + (sub.paymentHistory ? sub.paymentHistory.length : 0) + '</span></div>' +
+                '</div>' +
+                (sub.gracePeriodEndsAt ? '<p class="text-xs text-orange-600">Gracia hasta: ' + new Date(sub.gracePeriodEndsAt).toLocaleDateString('es-CO') + '</p>' : '') +
+                (sub.deletionDate ? '<p class="text-xs text-red-600">Eliminaci&oacute;n: ' + new Date(sub.deletionDate).toLocaleDateString('es-CO') + '</p>' : '') +
+              '</div>';
+          } catch(e) {
+            resultDiv.innerHTML = '<div class="p-3 rounded-xl bg-red-50 border border-red-200 text-center"><p class="text-sm text-red-500">Error al leer datos: ' + e.message + '</p></div>';
+          }
+        };
+
+        // Simulate states
+        document.querySelectorAll('.sub-sim-btn').forEach(function(btn) {
+          btn.onclick = function() {
+            var email = document.getElementById('sub-sim-email').value.trim();
+            var state = btn.dataset.state;
+            var resultEl = document.getElementById('sub-sim-result');
+            if (!email) {
+              resultEl.classList.remove('hidden');
+              resultEl.className = 'text-xs text-center text-red-500';
+              resultEl.textContent = 'Ingresa un email primero';
+              return;
+            }
+
+            var subKey = 'dya_subscription_' + email;
+            var now = new Date().toISOString();
+            var sub;
+            try { sub = JSON.parse(localStorage.getItem(subKey) || 'null'); } catch(e) { sub = null; }
+            if (!sub) {
+              sub = {
+                email: email, plan: 'mensual', status: 'trial',
+                startDate: now, expiresAt: '', trialEndsAt: '', lastPaymentDate: '',
+                lastPaymentId: '', nextPaymentDue: '', gracePeriodEndsAt: '',
+                deletionDate: '',
+                reminders: { day7:false,day3:false,day2:false,day1:false,expired:false,grace5:false,grace3:false,grace1:false,deleteWarning7:false,deleteWarning3:false,deleteWarning1:false },
+                paymentHistory: []
+              };
+            }
+
+            function addDays(dateStr, days) {
+              var d = new Date(dateStr);
+              d.setDate(d.getDate() + days);
+              return d.toISOString();
+            }
+
+            switch(state) {
+              case 'trial':
+                sub.status = 'trial';
+                sub.startDate = now;
+                sub.trialEndsAt = addDays(now, 7);
+                sub.expiresAt = sub.trialEndsAt;
+                sub.gracePeriodEndsAt = '';
+                sub.deletionDate = '';
+                break;
+              case 'active':
+                sub.status = 'active';
+                sub.startDate = now;
+                sub.expiresAt = addDays(now, 30);
+                sub.lastPaymentDate = now;
+                sub.lastPaymentId = 'SIM_' + Date.now();
+                sub.gracePeriodEndsAt = '';
+                sub.deletionDate = '';
+                break;
+              case 'expired':
+                sub.status = 'expired';
+                sub.expiresAt = addDays(now, -1);
+                sub.gracePeriodEndsAt = addDays(now, 4);
+                sub.deletionDate = '';
+                break;
+              case 'grace':
+                sub.status = 'grace';
+                sub.expiresAt = addDays(now, -3);
+                sub.gracePeriodEndsAt = addDays(now, 2);
+                sub.deletionDate = '';
+                break;
+              case 'blocked':
+                sub.status = 'blocked';
+                sub.expiresAt = addDays(now, -10);
+                sub.gracePeriodEndsAt = addDays(now, -5);
+                sub.deletionDate = addDays(now, 20);
+                break;
+              case 'deleted':
+                sub.status = 'deleted';
+                sub.expiresAt = addDays(now, -40);
+                sub.gracePeriodEndsAt = addDays(now, -35);
+                sub.deletionDate = addDays(now, -1);
+                break;
+            }
+
+            localStorage.setItem(subKey, JSON.stringify(sub));
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-emerald-600';
+            resultEl.textContent = 'Estado de ' + email + ' cambiado a: ' + state;
+            setTimeout(function() { resultEl.classList.add('hidden'); }, 3000);
+          };
+        });
+
+        // Extend subscription
+        document.getElementById('sub-ext-btn').onclick = function() {
+          var email = document.getElementById('sub-ext-email').value.trim();
+          var plan = document.getElementById('sub-ext-plan').value;
+          var resultEl = document.getElementById('sub-ext-result');
+          if (!email) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Ingresa un email';
+            return;
+          }
+
+          var subKey = 'dya_subscription_' + email;
+          var sub;
+          try { sub = JSON.parse(localStorage.getItem(subKey) || 'null'); } catch(e) { sub = null; }
+          if (!sub) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'No se encontro suscripcion para este email';
+            return;
+          }
+
+          var now = new Date().toISOString();
+          var days = plan === 'anual' ? 365 : (plan === 'trimestral' ? 90 : 30);
+
+          function addDays(dateStr, d) {
+            var dt = new Date(dateStr);
+            dt.setDate(dt.getDate() + d);
+            return dt.toISOString();
+          }
+
+          sub.status = 'active';
+          sub.plan = plan;
+          sub.startDate = now;
+          sub.expiresAt = addDays(now, days);
+          sub.lastPaymentDate = now;
+          sub.lastPaymentId = 'ADMIN_EXT_' + Date.now();
+          sub.nextPaymentDue = sub.expiresAt;
+          sub.gracePeriodEndsAt = '';
+          sub.deletionDate = '';
+          sub.reminders = { day7:false,day3:false,day2:false,day1:false,expired:false,grace5:false,grace3:false,grace1:false,deleteWarning7:false,deleteWarning3:false,deleteWarning1:false };
+          sub.paymentHistory = sub.paymentHistory || [];
+          sub.paymentHistory.push({ date: now, amount: 0, currency: 'COP', mpPaymentId: 'ADMIN_EXT_' + Date.now(), method: 'admin_manual' });
+
+          localStorage.setItem(subKey, JSON.stringify(sub));
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center text-emerald-600';
+          resultEl.textContent = 'Suscripcion extendida: ' + plan + ' (' + days + ' dias) hasta ' + new Date(sub.expiresAt).toLocaleDateString('es-CO');
+          setTimeout(function() { resultEl.classList.add('hidden'); }, 4000);
+        };
+
+        // Test email reminder
+        document.getElementById('sub-test-email').onclick = function() {
+          var email = document.getElementById('sub-rem-email').value.trim();
+          var resultEl = document.getElementById('sub-rem-result');
+          if (!email) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Ingresa un email';
+            return;
+          }
+
+          var cfg = getConfig();
+          var apiKey = cfg['SENDGRID_API_KEY'];
+          if (!apiKey) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'SendGrid no configurado. Ve a API Config.';
+            return;
+          }
+
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center text-blue-500';
+          resultEl.textContent = 'Enviando email de prueba...';
+
+          var serverBase = window.location.origin;
+          fetch(serverBase + '/api/sendgrid/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              api_key: apiKey,
+              from_email: cfg['SENDGRID_FROM_EMAIL'] || 'noreply@midoctorya.com',
+              to_email: email,
+              subject: '[TEST] Recordatorio de suscripcion - MiDoctorYa',
+              html_body: '<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px;">' +
+                '<div style="background:linear-gradient(135deg,#6366F1,#4F46E5);border-radius:16px;padding:30px;text-align:center;margin-bottom:20px;">' +
+                  '<h1 style="color:white;margin:0;">MiDoctorYa</h1>' +
+                '</div>' +
+                '<div style="background:white;border-radius:16px;padding:24px;border:1px solid #e2e8f0;">' +
+                  '<h2 style="color:#1e293b;">Este es un email de prueba</h2>' +
+                  '<p style="color:#64748b;">Si recibes este mensaje, los recordatorios por email estan funcionando correctamente.</p>' +
+                '</div>' +
+              '</div>'
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              resultEl.className = 'text-xs text-center text-emerald-600';
+              resultEl.textContent = 'Email de prueba enviado correctamente a ' + email;
+            } else {
+              resultEl.className = 'text-xs text-center text-red-500';
+              resultEl.textContent = 'Error: ' + (data.error || 'desconocido');
+            }
+          })
+          .catch(function(err) {
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Error: ' + err.message;
+          });
+        };
+
+        // Test WhatsApp reminder
+        document.getElementById('sub-test-wa').onclick = function() {
+          var phone = document.getElementById('sub-rem-phone').value.trim();
+          var resultEl = document.getElementById('sub-rem-result');
+          if (!phone) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Ingresa un numero de telefono';
+            return;
+          }
+
+          var cfg = getConfig();
+          var instanceId = cfg['ULTRAMSG_INSTANCE_ID'];
+          var token = cfg['ULTRAMSG_TOKEN'];
+          if (!instanceId || !token) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'UltraMSG no configurado. Ve a API Config.';
+            return;
+          }
+
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center text-green-500';
+          resultEl.textContent = 'Enviando WhatsApp de prueba...';
+
+          var serverBase = window.location.origin;
+          fetch(serverBase + '/api/ultramsg/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              instance_id: instanceId,
+              token: token,
+              to: phone,
+              body: '[TEST] MiDoctorYa: Este es un mensaje de prueba de recordatorio. Si recibes este mensaje, la integracion con WhatsApp funciona correctamente.'
+            })
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              resultEl.className = 'text-xs text-center text-emerald-600';
+              resultEl.textContent = 'WhatsApp de prueba enviado a ' + phone;
+            } else {
+              resultEl.className = 'text-xs text-center text-red-500';
+              resultEl.textContent = 'Error: ' + (data.error || 'desconocido');
+            }
+          })
+          .catch(function(err) {
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Error: ' + err.message;
+          });
+        };
+      }
+
+      // --- Promo Codes Tab ---
+      var PROMO_CODES_KEY = 'dya_promo_codes';
+
+      function _getPromoCodes() {
+        try { return JSON.parse(localStorage.getItem(PROMO_CODES_KEY) || '[]'); } catch(e) { return []; }
+      }
+      function _savePromoCodes(codes) {
+        localStorage.setItem(PROMO_CODES_KEY, JSON.stringify(codes));
+      }
+
+      function renderPromoCodesTab(container) {
+        var codes = _getPromoCodes();
+
+        var html = '<div class="space-y-4 animate-fade-in">';
+
+        // Create new code form
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+          '<div class="flex items-center gap-3 mb-4">' +
+            '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white text-lg">&#x1F3AB;</div>' +
+            '<div>' +
+              '<h3 class="font-bold text-gray-800">Crear C&oacute;digo Promocional</h3>' +
+              '<p class="text-xs text-gray-400">Crea c&oacute;digos para pacientes o campa&ntilde;as</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="space-y-3">' +
+            '<div>' +
+              '<label class="block text-xs font-semibold text-gray-600 mb-1">C&oacute;digo</label>' +
+              '<input type="text" id="promo-code-name" placeholder="Ej: MEDICO30" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm uppercase" maxlength="20">' +
+            '</div>' +
+            '<div class="grid grid-cols-2 gap-3">' +
+              '<div>' +
+                '<label class="block text-xs font-semibold text-gray-600 mb-1">D&iacute;as de prueba</label>' +
+                '<input type="number" id="promo-trial-days" value="7" min="0" max="365" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+              '<div>' +
+                '<label class="block text-xs font-semibold text-gray-600 mb-1">Descuento %</label>' +
+                '<input type="number" id="promo-discount" value="0" min="0" max="100" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+            '</div>' +
+            '<div class="grid grid-cols-2 gap-3">' +
+              '<div>' +
+                '<label class="block text-xs font-semibold text-gray-600 mb-1">Usos m&aacute;ximos</label>' +
+                '<input type="number" id="promo-max-uses" value="100" min="1" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+              '<div>' +
+                '<label class="block text-xs font-semibold text-gray-600 mb-1">Expira</label>' +
+                '<input type="date" id="promo-expires" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<label class="block text-xs font-semibold text-gray-600 mb-1">Descripci&oacute;n</label>' +
+              '<input type="text" id="promo-description" placeholder="Ej: Campaña de bienvenida" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+            '</div>' +
+            '<button id="promo-create-btn" class="w-full py-3 rounded-xl gradient-accent text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Crear C&oacute;digo</button>' +
+            '<p id="promo-create-result" class="text-xs text-center hidden"></p>' +
+          '</div>' +
+        '</div>';
+
+        // Quick codes
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+          '<div class="flex items-center gap-3 mb-4">' +
+            '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-lg">&#x26A1;</div>' +
+            '<div>' +
+              '<h3 class="font-bold text-gray-800">C&oacute;digos R&aacute;pidos</h3>' +
+              '<p class="text-xs text-gray-400">Crear c&oacute;digos predefinidos con un clic</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="grid grid-cols-3 gap-2 mb-3">' +
+            '<button class="promo-quick-btn py-2.5 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition" data-code="MEDICO7" data-days="7">MEDICO7<br><span class="text-[10px] font-normal">7 d&iacute;as</span></button>' +
+            '<button class="promo-quick-btn py-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 hover:bg-emerald-100 transition" data-code="MEDICO30" data-days="30">MEDICO30<br><span class="text-[10px] font-normal">30 d&iacute;as</span></button>' +
+            '<button class="promo-quick-btn py-2.5 rounded-xl bg-purple-50 text-purple-700 text-xs font-bold border border-purple-200 hover:bg-purple-100 transition" data-code="BIENVENIDO14" data-days="14">BIENVENIDO14<br><span class="text-[10px] font-normal">14 d&iacute;as</span></button>' +
+          '</div>' +
+          '<p id="promo-quick-result" class="text-xs text-center hidden"></p>' +
+        '</div>';
+
+        // Doctor code generator
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+          '<div class="flex items-center gap-3 mb-4">' +
+            '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 flex items-center justify-center text-white text-lg">&#x1FA7A;</div>' +
+            '<div>' +
+              '<h3 class="font-bold text-gray-800">C&oacute;digo de Doctor</h3>' +
+              '<p class="text-xs text-gray-400">Genera un c&oacute;digo personalizado para un doctor</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flex gap-2 mb-3">' +
+            '<input type="text" id="promo-doctor-name" placeholder="Nombre del doctor (ej: PEREZ)" class="flex-1 px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm uppercase">' +
+            '<select id="promo-doctor-days" class="px-3 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '<option value="7">7 dias</option>' +
+              '<option value="14">14 dias</option>' +
+              '<option value="30" selected>30 dias</option>' +
+              '<option value="60">60 dias</option>' +
+              '<option value="90">90 dias</option>' +
+            '</select>' +
+          '</div>' +
+          '<button id="promo-doctor-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Generar C&oacute;digo DR_{NOMBRE}_{DIAS}</button>' +
+          '<p id="promo-doctor-result" class="text-xs text-center mt-2 hidden"></p>' +
+        '</div>';
+
+        // Existing codes list
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">' +
+          '<div class="flex items-center gap-3 mb-4">' +
+            '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">&#x1F4CB;</div>' +
+            '<div>' +
+              '<h3 class="font-bold text-gray-800">C&oacute;digos Existentes (' + codes.length + ')</h3>' +
+              '<p class="text-xs text-gray-400">Gesti&oacute;n de c&oacute;digos activos e inactivos</p>' +
+            '</div>' +
+          '</div>';
+
+        if (codes.length === 0) {
+          html += '<p class="text-center text-gray-400 text-sm py-4">No hay c&oacute;digos creados a&uacute;n</p>';
+        } else {
+          html += '<div class="space-y-2">';
+          codes.forEach(function(c, i) {
+            var isExpired = c.expiresAt && new Date(c.expiresAt) < new Date();
+            var isExhausted = c.currentUses >= c.maxUses;
+            var statusText = !c.active ? 'Inactivo' : (isExpired ? 'Expirado' : (isExhausted ? 'Agotado' : 'Activo'));
+            var statusColor = !c.active ? 'bg-gray-100 text-gray-500' : (isExpired ? 'bg-red-100 text-red-600' : (isExhausted ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'));
+            var createdDate = c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-CO') : '-';
+
+            html += '<div class="p-3 rounded-xl border border-gray-200 bg-gray-50">' +
+              '<div class="flex items-center justify-between mb-2">' +
+                '<div class="flex items-center gap-2">' +
+                  '<span class="font-bold text-sm text-gray-800 font-mono">' + esc(c.code) + '</span>' +
+                  '<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ' + statusColor + '">' + statusText + '</span>' +
+                '</div>' +
+                (c.active ? '<button class="promo-deactivate-btn text-[10px] px-3 py-1 rounded-lg bg-red-50 text-red-500 font-bold hover:bg-red-100 transition" data-index="' + i + '">Desactivar</button>' : '') +
+              '</div>' +
+              '<div class="grid grid-cols-3 gap-2 text-[10px] text-gray-500">' +
+                '<div>Dias: <strong>' + (c.trialDays || 0) + '</strong></div>' +
+                '<div>Dto: <strong>' + (c.discountPercent || 0) + '%</strong></div>' +
+                '<div>Usos: <strong>' + (c.currentUses || 0) + '/' + (c.maxUses || 0) + '</strong></div>' +
+                '<div>Creado: <strong>' + createdDate + '</strong></div>' +
+                '<div>Por: <strong>' + esc(c.createdBy || 'admin') + '</strong></div>' +
+                '<div>Tipo: <strong>' + esc(c.createdByType || 'admin') + '</strong></div>' +
+              '</div>' +
+              (c.description ? '<p class="text-[10px] text-gray-400 mt-1">' + esc(c.description) + '</p>' : '') +
+            '</div>';
+          });
+          html += '</div>';
+        }
+
+        html += '</div></div>';
+        container.innerHTML = html;
+
+        // Bind create code
+        document.getElementById('promo-create-btn').onclick = function() {
+          var code = document.getElementById('promo-code-name').value.trim().toUpperCase();
+          var resultEl = document.getElementById('promo-create-result');
+          if (!code) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Ingresa un codigo';
+            return;
+          }
+          var codes = _getPromoCodes();
+          var existing = codes.find(function(c) { return c.code.toUpperCase() === code; });
+          if (existing) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Codigo ya existe';
+            return;
+          }
+          codes.push({
+            code: code,
+            trialDays: parseInt(document.getElementById('promo-trial-days').value) || 7,
+            discountPercent: parseInt(document.getElementById('promo-discount').value) || 0,
+            maxUses: parseInt(document.getElementById('promo-max-uses').value) || 100,
+            currentUses: 0,
+            expiresAt: document.getElementById('promo-expires').value || null,
+            createdBy: 'admin',
+            createdByType: 'admin',
+            description: document.getElementById('promo-description').value.trim(),
+            active: true,
+            createdAt: new Date().toISOString()
+          });
+          _savePromoCodes(codes);
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center text-emerald-600';
+          resultEl.textContent = 'Codigo ' + code + ' creado exitosamente';
+          setTimeout(function() { renderPromoCodesTab(container); }, 1500);
+        };
+
+        // Quick codes
+        document.querySelectorAll('.promo-quick-btn').forEach(function(btn) {
+          btn.onclick = function() {
+            var code = btn.dataset.code;
+            var days = parseInt(btn.dataset.days);
+            var resultEl = document.getElementById('promo-quick-result');
+            var codes = _getPromoCodes();
+            var existing = codes.find(function(c) { return c.code === code; });
+            if (existing) {
+              resultEl.classList.remove('hidden');
+              resultEl.className = 'text-xs text-center text-amber-600';
+              resultEl.textContent = 'Codigo ' + code + ' ya existe';
+              setTimeout(function() { resultEl.classList.add('hidden'); }, 2000);
+              return;
+            }
+            codes.push({
+              code: code,
+              trialDays: days,
+              discountPercent: 0,
+              maxUses: 100,
+              currentUses: 0,
+              expiresAt: null,
+              createdBy: 'admin',
+              createdByType: 'admin',
+              description: 'Codigo rapido: ' + days + ' dias de prueba',
+              active: true,
+              createdAt: new Date().toISOString()
+            });
+            _savePromoCodes(codes);
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-emerald-600';
+            resultEl.textContent = 'Codigo ' + code + ' creado (' + days + ' dias)';
+            setTimeout(function() { renderPromoCodesTab(container); }, 1500);
+          };
+        });
+
+        // Doctor code generator
+        document.getElementById('promo-doctor-btn').onclick = function() {
+          var name = document.getElementById('promo-doctor-name').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '_');
+          var days = parseInt(document.getElementById('promo-doctor-days').value) || 30;
+          var resultEl = document.getElementById('promo-doctor-result');
+          if (!name) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-red-500';
+            resultEl.textContent = 'Ingresa el nombre del doctor';
+            return;
+          }
+          var code = 'DR_' + name + '_' + days;
+          var codes = _getPromoCodes();
+          var existing = codes.find(function(c) { return c.code === code; });
+          if (existing) {
+            resultEl.classList.remove('hidden');
+            resultEl.className = 'text-xs text-center text-amber-600';
+            resultEl.textContent = 'Codigo ' + code + ' ya existe';
+            return;
+          }
+          codes.push({
+            code: code,
+            trialDays: days,
+            discountPercent: 0,
+            maxUses: 50,
+            currentUses: 0,
+            expiresAt: null,
+            createdBy: 'Dr. ' + name,
+            createdByType: 'doctor',
+            description: 'Codigo para pacientes del Dr. ' + name,
+            active: true,
+            createdAt: new Date().toISOString()
+          });
+          _savePromoCodes(codes);
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center text-emerald-600';
+          resultEl.textContent = 'Codigo ' + code + ' creado para Dr. ' + name;
+          setTimeout(function() { renderPromoCodesTab(container); }, 1500);
+        };
+
+        // Deactivate buttons
+        document.querySelectorAll('.promo-deactivate-btn').forEach(function(btn) {
+          btn.onclick = function() {
+            var idx = parseInt(btn.dataset.index);
+            var codes = _getPromoCodes();
+            if (codes[idx]) {
+              codes[idx].active = false;
+              _savePromoCodes(codes);
+              renderPromoCodesTab(container);
+            }
+          };
+        });
+      }
+
+      // --- Guide Tab ---
+      function renderGuideTab(container) {
+        var cfg = getConfig();
+        var mpOk = !!(cfg['MP_ACCESS_TOKEN'] && cfg['MP_PUBLIC_KEY']);
+        var sgOk = !!(cfg['SENDGRID_API_KEY']);
+        var umOk = !!(cfg['ULTRAMSG_INSTANCE_ID'] && cfg['ULTRAMSG_TOKEN']);
+        var gfOk = !!(cfg['GOOGLE_FIT_CLIENT_ID'] && cfg['GOOGLE_FIT_CLIENT_SECRET']);
+
+        function statusBadge(ok) {
+          return ok
+            ? '<span class="text-[10px] px-2 py-1 rounded-full font-bold bg-emerald-100 text-emerald-700">Configurado &#x2705;</span>'
+            : '<span class="text-[10px] px-2 py-1 rounded-full font-bold bg-red-100 text-red-600">No configurado &#x274C;</span>';
+        }
+
+        function sectionHeader(id, icon, title, subtitle, isOk) {
+          return '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">' +
+            '<button class="guide-section-toggle w-full flex items-center gap-3 p-5 text-left hover:bg-gray-50 transition" data-guide-section="' + id + '">' +
+              '<div class="w-10 h-10 rounded-xl gradient-navy flex items-center justify-center text-white text-lg shrink-0">' + icon + '</div>' +
+              '<div class="flex-1">' +
+                '<div class="flex items-center gap-2">' +
+                  '<h3 class="font-bold text-gray-800">' + title + '</h3>' +
+                  statusBadge(isOk) +
+                '</div>' +
+                '<p class="text-xs text-gray-400 mt-0.5">' + subtitle + '</p>' +
+              '</div>' +
+              '<svg class="guide-chevron w-5 h-5 text-gray-400 transition-transform" data-guide-section="' + id + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+            '</button>' +
+            '<div class="section-collapse" id="guide-section-' + id + '"><div class="px-5 pb-5">';
+        }
+        var sFooter = '</div></div></div>';
+
+        var html = '<div class="space-y-4 animate-fade-in">' +
+          '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-2">' +
+            '<h3 class="font-bold text-gray-800 mb-3">&#x1F6E0;&#xFE0F; Estado de Servicios</h3>' +
+            '<div class="grid grid-cols-2 gap-2">' +
+              '<div class="p-3 rounded-xl ' + (mpOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') + ' border text-center">' +
+                '<p class="text-xs font-bold">' + (mpOk ? '&#x2705;' : '&#x274C;') + ' Mercado Pago</p>' +
+              '</div>' +
+              '<div class="p-3 rounded-xl ' + (sgOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') + ' border text-center">' +
+                '<p class="text-xs font-bold">' + (sgOk ? '&#x2705;' : '&#x274C;') + ' SendGrid</p>' +
+              '</div>' +
+              '<div class="p-3 rounded-xl ' + (umOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') + ' border text-center">' +
+                '<p class="text-xs font-bold">' + (umOk ? '&#x2705;' : '&#x274C;') + ' UltraMSG</p>' +
+              '</div>' +
+              '<div class="p-3 rounded-xl ' + (gfOk ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200') + ' border text-center">' +
+                '<p class="text-xs font-bold">' + (gfOk ? '&#x2705;' : '&#x274C;') + ' Google Fit</p>' +
+              '</div>' +
+            '</div>' +
+            '<button id="guide-test-all" class="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Probar Conexi&oacute;n de Todos los Servicios</button>' +
+            '<p id="guide-test-result" class="text-xs text-center mt-2 hidden"></p>' +
+          '</div>';
+
+        // === Mercado Pago Guide ===
+        html += sectionHeader('guide-mp', '&#x1F4B3;', 'Mercado Pago', 'Pagos y suscripciones', mpOk);
+        html += '<div class="space-y-3 text-sm text-gray-600">' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 1: Crear cuenta en Mercado Pago</p>' +
+            '<p>Visita <a href="https://www.mercadopago.com.co" target="_blank" class="text-blue-600 underline">mercadopago.com.co</a> y crea una cuenta de vendedor.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 2: Obtener credenciales</p>' +
+            '<p>Ve a <a href="https://www.mercadopago.com.co/developers/panel/app" target="_blank" class="text-blue-600 underline">Panel de Desarrolladores</a> &gt; Credenciales.</p>' +
+            '<p class="mt-1">Copia la <strong>Public Key</strong> y el <strong>Access Token</strong>.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 3: Configurar en Admin</p>' +
+            '<p>Ve a la pesta&ntilde;a <strong>API Config</strong> y pega las credenciales en los campos de Mercado Pago.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-amber-50 border border-amber-100">' +
+            '<p class="font-bold text-amber-800 mb-2">Sandbox vs Producci&oacute;n</p>' +
+            '<p>Usa las credenciales de <strong>prueba (TEST-)</strong> para testing. Cambia a las de <strong>producci&oacute;n (APP_USR-)</strong> cuando est&eacute;s listo.</p>' +
+            '<p class="mt-1">Activa/desactiva el modo Sandbox en <strong>Config App &gt; Mercado Pago</strong>.</p>' +
+          '</div>' +
+        '</div>';
+        html += sFooter;
+
+        // === SendGrid Guide ===
+        html += sectionHeader('guide-sg', '&#x1F4E7;', 'SendGrid', 'Emails de recordatorio', sgOk);
+        html += '<div class="space-y-3 text-sm text-gray-600">' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 1: Crear cuenta en SendGrid</p>' +
+            '<p>Visita <a href="https://signup.sendgrid.com/" target="_blank" class="text-blue-600 underline">sendgrid.com</a> y crea una cuenta gratuita (100 emails/dia).</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 2: Verificar remitente</p>' +
+            '<p>En SendGrid, ve a <strong>Settings &gt; Sender Authentication</strong>.</p>' +
+            '<p class="mt-1">Verifica tu email o dominio como remitente autorizado.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 3: Crear API Key</p>' +
+            '<p>Ve a <strong>Settings &gt; API Keys &gt; Create API Key</strong>.</p>' +
+            '<p class="mt-1">Selecciona "Full Access" o "Restricted Access" con permisos de Mail Send.</p>' +
+            '<p class="mt-1">La key empieza con <code class="bg-gray-100 px-1 rounded">SG.</code></p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 4: Configurar en Admin</p>' +
+            '<p>Pega la API Key y el email verificado en <strong>API Config</strong>.</p>' +
+          '</div>' +
+        '</div>';
+        html += sFooter;
+
+        // === UltraMSG Guide ===
+        html += sectionHeader('guide-um', '&#x1F4F1;', 'UltraMSG (WhatsApp)', 'Mensajes de WhatsApp', umOk);
+        html += '<div class="space-y-3 text-sm text-gray-600">' +
+          '<div class="p-3 rounded-lg bg-green-50 border border-green-100">' +
+            '<p class="font-bold text-green-800 mb-2">Paso 1: Crear cuenta en UltraMSG</p>' +
+            '<p>Visita <a href="https://ultramsg.com/" target="_blank" class="text-green-600 underline">ultramsg.com</a> y crea una cuenta. Hay plan gratuito de prueba.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-green-50 border border-green-100">' +
+            '<p class="font-bold text-green-800 mb-2">Paso 2: Conectar WhatsApp</p>' +
+            '<p>En el panel de UltraMSG, escanea el c&oacute;digo QR con WhatsApp para conectar tu n&uacute;mero.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-green-50 border border-green-100">' +
+            '<p class="font-bold text-green-800 mb-2">Paso 3: Obtener credenciales</p>' +
+            '<p>Copia el <strong>Instance ID</strong> y el <strong>Token</strong> de tu instancia.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-green-50 border border-green-100">' +
+            '<p class="font-bold text-green-800 mb-2">Paso 4: Configurar en Admin</p>' +
+            '<p>Pega el Instance ID y Token en <strong>API Config</strong>.</p>' +
+          '</div>' +
+        '</div>';
+        html += sFooter;
+
+        // === Google Fit Guide ===
+        html += sectionHeader('guide-gf', '&#x231A;', 'Google Fit API', 'Datos de wearables', gfOk);
+        html += '<div class="space-y-3 text-sm text-gray-600">' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 1: Crear proyecto en Google Cloud</p>' +
+            '<p>Ve a <a href="https://console.cloud.google.com/" target="_blank" class="text-blue-600 underline">Google Cloud Console</a> y crea un proyecto nuevo.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 2: Habilitar Fitness API</p>' +
+            '<p>En la biblioteca de APIs, busca <strong>Fitness API</strong> y habil&iacute;tala.</p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 3: Crear credenciales OAuth</p>' +
+            '<p>Ve a <strong>APIs &amp; Services &gt; Credentials &gt; Create Credentials &gt; OAuth Client ID</strong>.</p>' +
+            '<p class="mt-1">Tipo: <strong>Web application</strong>.</p>' +
+            '<p class="mt-1">Redirect URI: <code class="bg-gray-100 px-1 rounded">' + window.location.origin + '</code></p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 4: Configurar pantalla de consentimiento</p>' +
+            '<p>Ve a <strong>OAuth Consent Screen</strong>, configura como "External".</p>' +
+            '<p class="mt-1">Agrega los scopes: <code class="bg-gray-100 px-1 rounded text-xs">fitness.activity.read, fitness.heart_rate.read, fitness.oxygen_saturation.read, fitness.body_temperature.read, fitness.sleep.read</code></p>' +
+          '</div>' +
+          '<div class="p-3 rounded-lg bg-blue-50 border border-blue-100">' +
+            '<p class="font-bold text-blue-800 mb-2">Paso 5: Configurar en Admin</p>' +
+            '<p>Copia el <strong>Client ID</strong> y <strong>Client Secret</strong> y p&eacute;galos en <strong>API Config</strong>.</p>' +
+          '</div>' +
+        '</div>';
+        html += sFooter;
+
+        html += '</div>';
+        container.innerHTML = html;
+
+        // Bind guide section toggles
+        document.querySelectorAll('.guide-section-toggle').forEach(function(btn) {
+          btn.onclick = function() {
+            var id = btn.dataset.guideSection;
+            var sec = document.getElementById('guide-section-' + id);
+            var chev = document.querySelector('.guide-chevron[data-guide-section="' + id + '"]');
+            sec.classList.toggle('open');
+            if (sec.classList.contains('open')) {
+              chev.style.transform = 'rotate(180deg)';
+            } else {
+              chev.style.transform = 'rotate(0deg)';
+            }
+          };
+        });
+
+        // Test all services
+        document.getElementById('guide-test-all').onclick = function() {
+          var resultEl = document.getElementById('guide-test-result');
+          resultEl.classList.remove('hidden');
+          resultEl.className = 'text-xs text-center mt-2 text-blue-500';
+          resultEl.textContent = 'Probando conexiones...';
+
+          var serverBase = window.location.origin;
+          var params = new URLSearchParams();
+          if (cfg['MP_ACCESS_TOKEN']) params.set('access_token', cfg['MP_ACCESS_TOKEN']);
+          if (cfg['SENDGRID_API_KEY']) params.set('sendgrid_key', cfg['SENDGRID_API_KEY']);
+          if (cfg['ULTRAMSG_INSTANCE_ID']) params.set('ultramsg_instance', cfg['ULTRAMSG_INSTANCE_ID']);
+          if (cfg['ULTRAMSG_TOKEN']) params.set('ultramsg_token', cfg['ULTRAMSG_TOKEN']);
+          if (cfg['GOOGLE_FIT_CLIENT_ID']) params.set('gfit_client_id', cfg['GOOGLE_FIT_CLIENT_ID']);
+
+          fetch(serverBase + '/api/services/status?' + params.toString())
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              var lines = [];
+              var services = { mercadopago: 'Mercado Pago', sendgrid: 'SendGrid', ultramsg: 'UltraMSG', googlefit: 'Google Fit' };
+              var allOk = true;
+              for (var key in services) {
+                var s = data[key] || {};
+                if (s.ok) {
+                  lines.push(services[key] + ': OK ' + (s.message || s.email || ''));
+                } else {
+                  lines.push(services[key] + ': ERROR - ' + (s.error || ''));
+                  allOk = false;
+                }
+              }
+              resultEl.className = 'text-xs text-center mt-2 ' + (allOk ? 'text-emerald-600' : 'text-amber-600');
+              resultEl.innerHTML = lines.join('<br>');
+            })
+            .catch(function(err) {
+              resultEl.className = 'text-xs text-center mt-2 text-red-500';
+              resultEl.textContent = 'Error de conexion: ' + err.message;
+            });
+        };
+      }
+
+      // --- API Config Tab ---
+      function renderApiConfigTab(container) {
+        var cfg = getConfig();
+        var fields = [
+          { key: 'RAPIDAPI_KEY', label: 'RapidAPI Key', placeholder: 'xxxxxxxx-xxxx-xxxx', type: 'password' },
+          { key: 'ULTRAMSG_INSTANCE_ID', label: 'UltraMsg Instance ID', placeholder: 'instance12345', type: 'text' },
+          { key: 'ULTRAMSG_TOKEN', label: 'UltraMsg Token', placeholder: 'token_xxxxxxxx', type: 'password' },
+          { key: 'GEMINI_API_KEY', label: 'Gemini API Key (Nutrition AI)', placeholder: 'AIzaSy...', type: 'password' },
+          { key: 'BACKEND_URL', label: 'Backend URL', placeholder: 'https://api.example.com', type: 'url' },
+          { key: 'MP_PUBLIC_KEY', label: 'Mercado Pago Public Key', placeholder: 'APP_USR-xxxxxxx...', type: 'text' },
+          { key: 'MP_ACCESS_TOKEN', label: 'Mercado Pago Access Token', placeholder: 'APP_USR-xxxxxxx...', type: 'password' },
+          { key: 'SENDGRID_API_KEY', label: 'SendGrid API Key', placeholder: 'SG.xxxxxxxx...', type: 'password' },
+          { key: 'SENDGRID_FROM_EMAIL', label: 'Email remitente (SendGrid)', placeholder: 'noreply@midoctorya.com', type: 'email' },
+          { key: 'GOOGLE_FIT_CLIENT_ID', label: 'Google Fit Client ID (Puente de Salud)', placeholder: 'xxxx.apps.googleusercontent.com', type: 'text' },
+          { key: 'GOOGLE_FIT_CLIENT_SECRET', label: 'Google Fit Client Secret', placeholder: 'GOCSPX-xxxxxxxx', type: 'password' }
+        ];
+
+        var html =
+          '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">' +
+            '<div class="flex items-center gap-3 mb-5">' +
+              '<div class="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-white text-lg">&#x2699;&#xFE0F;</div>' +
+              '<div>' +
+                '<h3 class="font-bold text-gray-800">Configuraci&oacute;n de APIs</h3>' +
+                '<p class="text-xs text-gray-400">Guardado en localStorage (' + CONFIG_KEY + ')</p>' +
+              '</div>' +
+            '</div>' +
+            '<div class="space-y-4">';
+
+        fields.forEach(function (f) {
+          var val = cfg[f.key] || '';
+          html +=
+            '<div>' +
+              '<label class="block text-xs font-semibold text-gray-600 mb-1">' + f.label + '</label>' +
+              '<input type="' + f.type + '" data-cfg-key="' + f.key + '" value="' + esc(val) + '" placeholder="' + f.placeholder + '" ' +
+                'class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-300">' +
+            '</div>';
+        });
+
+        // Mercado Pago Sandbox toggle (special checkbox field)
+        var mpSandbox = cfg['MP_SANDBOX'] !== undefined ? cfg['MP_SANDBOX'] : 'true';
+        html +=
+            '<div class="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200">' +
+              '<div>' +
+                '<label class="text-xs font-semibold text-gray-600">Modo Sandbox (pruebas)</label>' +
+                '<p class="text-[10px] text-gray-400">Activar para usar el entorno de pruebas de Mercado Pago</p>' +
+              '</div>' +
+              '<label class="toggle-switch"><input type="checkbox" id="mp-sandbox-toggle" ' + (mpSandbox === 'true' || mpSandbox === true ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+            '</div>';
+
+        html +=
+            '</div>' +
+            '<button id="save-config" class="mt-6 w-full py-3 rounded-xl gradient-primary text-white font-bold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-transform">Guardar Configuraci&oacute;n</button>' +
+            '<p id="config-saved" class="text-emerald-500 text-xs text-center mt-2 hidden">Configuraci&oacute;n guardada correctamente</p>' +
+          '</div>';
+
+        container.innerHTML = html;
+
+        document.getElementById('save-config').onclick = function () {
+          var newCfg = {};
+          container.querySelectorAll('[data-cfg-key]').forEach(function (input) {
+            newCfg[input.dataset.cfgKey] = input.value.trim();
+          });
+          var sandboxToggle = document.getElementById('mp-sandbox-toggle');
+          if (sandboxToggle) newCfg['MP_SANDBOX'] = sandboxToggle.checked ? 'true' : 'false';
+          saveConfig(newCfg);
+          var msg = document.getElementById('config-saved');
+          msg.classList.remove('hidden');
+          setTimeout(function () { msg.classList.add('hidden'); }, 2500);
+        };
+      }
+
+      // --- Environment Variables Tab ---
+      function renderEnvTab(container) {
+        var cfg = getConfig();
+        var keys = ['RAPIDAPI_KEY', 'ULTRAMSG_INSTANCE_ID', 'ULTRAMSG_TOKEN', 'GEMINI_API_KEY', 'BACKEND_URL', 'MP_PUBLIC_KEY', 'MP_ACCESS_TOKEN', 'MP_SANDBOX', 'SENDGRID_API_KEY', 'SENDGRID_FROM_EMAIL', 'GOOGLE_FIT_CLIENT_ID', 'GOOGLE_FIT_CLIENT_SECRET'];
+
+        var html =
+          '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">' +
+            '<div class="flex items-center gap-3 mb-5">' +
+              '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-lg">&#x1F4CB;</div>' +
+              '<div>' +
+                '<h3 class="font-bold text-gray-800">Variables de Entorno</h3>' +
+                '<p class="text-xs text-gray-400">Estado actual de la configuraci&oacute;n</p>' +
+              '</div>' +
+            '</div>' +
+            '<div class="space-y-2">';
+
+        keys.forEach(function (key) {
+          var val = cfg[key];
+          var hasValue = val && val.length > 0;
+          var display = hasValue ? (val.substring(0, 4) + '****' + val.substring(val.length - 3)) : 'No configurado';
+          var statusClass = hasValue ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400';
+          var dotClass = hasValue ? 'bg-emerald-400' : 'bg-gray-300';
+
+          html +=
+            '<div class="flex items-center justify-between p-3 rounded-xl ' + statusClass + '">' +
+              '<div class="flex items-center gap-2">' +
+                '<div class="w-2 h-2 rounded-full ' + dotClass + '"></div>' +
+                '<span class="text-xs font-mono font-semibold">' + key + '</span>' +
+              '</div>' +
+              '<span class="text-[11px] font-mono">' + display + '</span>' +
+            '</div>';
+        });
+
+        html +=
+            '</div>' +
+            '<div class="mt-5 p-3 rounded-xl bg-indigo-50 text-indigo-600 text-xs">' +
+              '<strong>localStorage key:</strong> <code class="bg-indigo-100 px-1.5 py-0.5 rounded">' + CONFIG_KEY + '</code>' +
+            '</div>' +
+          '</div>';
+
+        container.innerHTML = html;
+      }
+
+      // ========================================
+      // ========== APP CONFIG TAB ==============
+      // ========================================
+      function renderAppConfigTab(container) {
+        var html = '<div class="space-y-4">';
+
+        // Section builder helper
+        function sectionHeader(id, icon, title, subtitle) {
+          return '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">' +
+            '<button class="section-toggle w-full flex items-center gap-3 p-5 text-left hover:bg-gray-50 transition" data-section="' + id + '">' +
+              '<div class="w-10 h-10 rounded-xl gradient-navy flex items-center justify-center text-white text-lg shrink-0">' + icon + '</div>' +
+              '<div class="flex-1">' +
+                '<h3 class="font-bold text-gray-800">' + title + '</h3>' +
+                '<p class="text-xs text-gray-400">' + subtitle + '</p>' +
+              '</div>' +
+              '<svg class="section-chevron w-5 h-5 text-gray-400 transition-transform" data-section="' + id + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+            '</button>' +
+            '<div class="section-collapse" id="section-' + id + '"><div class="px-5 pb-5">';
+        }
+        var sectionFooter = '</div></div></div>';
+
+        // ===== 1. CONDITIONS =====
+        html += sectionHeader('conditions', '&#x1FA7A;', 'Condiciones M&eacute;dicas', 'Gestiona las condiciones m\u00e9dicas disponibles');
+        var conditions = getConditions();
+        html += '<div class="flex gap-2 mb-4">' +
+          '<input type="text" id="new-condition-name" placeholder="Nueva condici\u00f3n..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+          '<input type="text" id="new-condition-icon" placeholder="Icono" class="w-16 px-2 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-center" maxlength="4">' +
+          '<button id="add-condition" class="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition shrink-0">+ Agregar</button>' +
+          '</div>';
+        html += '<div class="space-y-2" id="conditions-list">';
+        conditions.forEach(function (c, i) {
+          html += '<div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50">' +
+            '<span class="text-xl">' + (c.icon || '&#x2695;') + '</span>' +
+            '<span class="flex-1 text-sm font-semibold text-gray-700">' + esc(c.name) + '</span>' +
+            '<label class="toggle-switch"><input type="checkbox" ' + (c.active ? 'checked' : '') + ' data-cond-toggle="' + i + '"><span class="toggle-slider"></span></label>' +
+            '<button class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition text-sm font-bold" data-cond-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div>';
+        html += sectionFooter;
+
+        // ===== 2. ALLERGIES =====
+        html += sectionHeader('allergies', '&#x1F927;', 'Alergias Configurables', 'Lista de alergias disponibles para pacientes');
+        var allergies = getAllergies();
+        html += '<div class="flex gap-2 mb-4">' +
+          '<input type="text" id="new-allergy-name" placeholder="Nueva alergia..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+          '<input type="text" id="new-allergy-icon" placeholder="Icono" class="w-16 px-2 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-center" maxlength="4">' +
+          '<button id="add-allergy" class="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition shrink-0">+ Agregar</button>' +
+          '</div>';
+        html += '<div class="space-y-2" id="allergies-list">';
+        allergies.forEach(function (a, i) {
+          html += '<div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50">' +
+            '<span class="text-xl">' + (a.icon || '&#x26A0;') + '</span>' +
+            '<span class="flex-1 text-sm font-semibold text-gray-700">' + esc(a.name) + '</span>' +
+            '<label class="toggle-switch"><input type="checkbox" ' + (a.active ? 'checked' : '') + ' data-allergy-toggle="' + i + '"><span class="toggle-slider"></span></label>' +
+            '<button class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition text-sm font-bold" data-allergy-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div>';
+        html += sectionFooter;
+
+        // ===== 3. FOOD RECOMMENDATIONS =====
+        html += sectionHeader('food', '&#x1F34E;', 'Alimentos por Condici&oacute;n M&eacute;dica', 'Recomendaciones y restricciones alimentarias');
+        var activeConditions = conditions.filter(function (c) { return c.active; });
+        html += '<div class="mb-4"><select id="food-condition-select" class="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm"><option value="">-- Seleccionar condici\u00f3n --</option>';
+        activeConditions.forEach(function (c) {
+          html += '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>';
+        });
+        html += '</select></div>';
+        html += '<div id="food-rules-content"></div>';
+        html += sectionFooter;
+
+        // ===== 4. SPECIALTIES =====
+        html += sectionHeader('specialties', '&#x1FA7A;', 'Especialidades M&eacute;dicas', 'Especialidades disponibles para m\u00e9dicos');
+        var specialties = getSpecialties();
+        html += '<div class="flex gap-2 mb-4">' +
+          '<input type="text" id="new-specialty" placeholder="Nueva especialidad..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+          '<button id="add-specialty" class="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition shrink-0">+ Agregar</button>' +
+          '</div>';
+        html += '<div class="flex flex-wrap gap-2" id="specialties-list">';
+        specialties.forEach(function (s, i) {
+          html += '<div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 border border-indigo-100">' +
+            '<span class="text-sm font-semibold text-indigo-700">' + esc(s) + '</span>' +
+            '<button class="w-5 h-5 rounded-full bg-red-100 text-red-500 hover:bg-red-200 transition text-xs font-bold leading-none" data-spec-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div>';
+        html += sectionFooter;
+
+        // ===== 5. EXERCISE RESTRICTIONS =====
+        html += sectionHeader('exercise', '&#x1F3CB;', 'Restricciones de Ejercicio por Condici&oacute;n', 'Reglas de ejercicio seg\u00fan condici\u00f3n m\u00e9dica');
+        html += '<div class="mb-4"><select id="exercise-condition-select" class="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm"><option value="">-- Seleccionar condici\u00f3n --</option>';
+        activeConditions.forEach(function (c) {
+          html += '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>';
+        });
+        html += '</select></div>';
+        html += '<div id="exercise-rules-content"></div>';
+        html += sectionFooter;
+
+        // ===== 6. MERCADO PAGO =====
+        html += sectionHeader('mercadopago', '&#x1F4B3;', 'Mercado Pago', 'Configuraci&oacute;n de pagos y suscripciones');
+        var mpConfig = JSON.parse(localStorage.getItem('dya_config_mercadopago') || '{}');
+        var mpSandboxMode = mpConfig.sandbox !== undefined ? mpConfig.sandbox : true;
+        var mpCOP = mpConfig.priceCOP || 50000;
+        var mpUSD = mpConfig.priceUSD || 30;
+
+        html += '<div class="space-y-4">';
+        // Sandbox toggle
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Modo Sandbox (pruebas)</p>' +
+            '<p class="text-[10px] text-gray-400">Usa sandbox_init_point en vez de init_point</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="mp-cfg-sandbox" ' + (mpSandboxMode ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        // Prices
+        html += '<div>' +
+          '<label class="block text-xs font-semibold text-gray-600 mb-1">Precio consulta (COP) - Colombia</label>' +
+          '<input type="number" id="mp-cfg-cop" value="' + mpCOP + '" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" placeholder="50000">' +
+        '</div>';
+        html += '<div>' +
+          '<label class="block text-xs font-semibold text-gray-600 mb-1">Precio consulta (USD) - Internacional</label>' +
+          '<input type="number" id="mp-cfg-usd" value="' + mpUSD + '" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" placeholder="30">' +
+        '</div>';
+
+        // Subscription config fields
+        var mpTrialDays = mpConfig.trialDays || 7;
+        var mpGraceDays = mpConfig.graceDays || 5;
+        var mpDeletionDays = mpConfig.deletionDays || 30;
+        var mpDiscTri = mpConfig.discountTrimestral || 10;
+        var mpDiscAn = mpConfig.discountAnual || 25;
+        var mpEmailRem = mpConfig.emailReminders !== false;
+        var mpWaRem = mpConfig.whatsappReminders !== false;
+
+        html += '<div class="mt-4 pt-4 border-t border-gray-200">' +
+          '<p class="text-sm font-bold text-gray-700 mb-3">Configuraci&oacute;n de Suscripciones</p>' +
+        '</div>';
+        html += '<div class="grid grid-cols-2 gap-3">' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">D&iacute;as de prueba gratis</label>' +
+            '<input type="number" id="mp-cfg-trial-days" value="' + mpTrialDays + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="0" max="30">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">D&iacute;as de gracia</label>' +
+            '<input type="number" id="mp-cfg-grace-days" value="' + mpGraceDays + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="0" max="15">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">D&iacute;as hasta eliminaci&oacute;n</label>' +
+            '<input type="number" id="mp-cfg-deletion-days" value="' + mpDeletionDays + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="7" max="90">' +
+          '</div>' +
+          '<div></div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">Descuento trimestral (%)</label>' +
+            '<input type="number" id="mp-cfg-disc-tri" value="' + mpDiscTri + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="0" max="50">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">Descuento anual (%)</label>' +
+            '<input type="number" id="mp-cfg-disc-an" value="' + mpDiscAn + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="0" max="75">' +
+          '</div>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-200 mt-3">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Recordatorios por email</p>' +
+            '<p class="text-[10px] text-gray-400">Env&iacute;a recordatorios de vencimiento por correo (SendGrid)</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="mp-cfg-email-rem" ' + (mpEmailRem ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-200 mt-2">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Recordatorios por WhatsApp</p>' +
+            '<p class="text-[10px] text-gray-400">Env&iacute;a recordatorios de vencimiento por WhatsApp (UltraMSG)</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="mp-cfg-wa-rem" ' + (mpWaRem ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+
+        // Test connection
+        html += '<button id="mp-test-conn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Probar Conexi&oacute;n</button>' +
+          '<p id="mp-test-result" class="text-xs text-center mt-2 hidden"></p>';
+        // Save
+        html += '<button id="mp-cfg-save" class="w-full py-3 rounded-xl gradient-accent text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Guardar Config Mercado Pago</button>' +
+          '<p id="mp-cfg-saved" class="text-emerald-500 text-xs text-center mt-2 hidden">Configuraci&oacute;n de Mercado Pago guardada</p>';
+        html += '</div>';
+        html += sectionFooter;
+
+        // ===== 7. DOCTOR MANAGEMENT =====
+        html += sectionHeader('doctors', '&#x1F468;&#x200D;&#x2695;&#xFE0F;', 'Gesti&oacute;n de M&eacute;dicos', 'Administrar m\u00e9dicos registrados y verificaciones');
+        var doctors = getDoctors();
+        if (doctors.length === 0) {
+          html += '<div class="text-center py-8 text-gray-400"><p class="text-3xl mb-2">&#x1F468;&#x200D;&#x2695;&#xFE0F;</p><p class="text-sm">No hay m&eacute;dicos registrados a&uacute;n</p></div>';
+        } else {
+          html += '<div class="space-y-3" id="doctors-list">';
+          doctors.forEach(function (d, i) {
+            var isActive = d.status === 'active' || d.status === 'verified';
+            var statusLabel = isActive ? 'Activo' : 'Inactivo';
+            var statusBg = isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700';
+            html += '<div class="p-4 rounded-xl border border-gray-100 bg-gray-50/50">' +
+              '<div class="flex items-center gap-3 mb-2">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm">' + (d.name || 'D')[0].toUpperCase() + '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                  '<p class="text-sm font-bold text-gray-800 truncate">' + esc(d.name || 'Sin nombre') + '</p>' +
+                  '<p class="text-[11px] text-gray-400 truncate">' + esc(d.email || '') + '</p>' +
+                '</div>' +
+                '<span class="text-[10px] px-2 py-1 rounded-full font-bold ' + statusBg + '">' + statusLabel + '</span>' +
+              '</div>' +
+              '<div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500 mb-3">' +
+                (d.license ? '<span>Hab. #' + esc(d.license) + '</span>' : '<span class="text-red-400">Sin tarjeta de habilitaci\u00f3n</span>') +
+                (d.specialties && d.specialties.length ? '<span>' + d.specialties.map(esc).join(', ') + '</span>' : '') +
+                (d.patients ? '<span>' + d.patients.length + ' pacientes</span>' : '') +
+              '</div>' +
+              '<div class="flex gap-2">' +
+                '<button class="flex-1 py-2 rounded-lg text-xs font-bold transition ' +
+                  (isActive ? 'bg-red-50 text-red-500 hover:bg-red-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100') +
+                  '" data-doc-toggle="' + i + '">' + (isActive ? 'Desactivar' : 'Activar') + '</button>' +
+                '<button class="flex-1 py-2 rounded-lg bg-indigo-50 text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition" data-doc-view="' + i + '">Ver Pacientes</button>' +
+              '</div>' +
+            '</div>';
+          });
+          html += '</div>';
+        }
+        html += sectionFooter;
+
+        // ===== 8. WEARABLES CONFIG =====
+        html += sectionHeader('wearables', '&#x231A;', 'Dispositivos y Wearables', 'Configuraci&oacute;n de dispositivos de monitoreo');
+        var wblConfig = JSON.parse(localStorage.getItem('dya_config_wearables') || '{}');
+        var wblCic = wblConfig.enableCicPlus !== undefined ? wblConfig.enableCicPlus : true;
+        var wblColmi = wblConfig.enableColmi !== undefined ? wblConfig.enableColmi : true;
+        var wblMedMon = wblConfig.enableMedicalMonitoring !== undefined ? wblConfig.enableMedicalMonitoring : true;
+        var wblEmAlert = wblConfig.enableEmergencyAlerts !== undefined ? wblConfig.enableEmergencyAlerts : true;
+        var wblApnea = wblConfig.enableApneaDetection !== undefined ? wblConfig.enableApneaDetection : true;
+        var wblArr = wblConfig.enableArrhythmiaDetection !== undefined ? wblConfig.enableArrhythmiaDetection : true;
+        var wblFall = wblConfig.enableFallDetection !== undefined ? wblConfig.enableFallDetection : false;
+        var wblDefHRHigh = wblConfig.defaultHRHigh || 120;
+        var wblDefHRLow = wblConfig.defaultHRLow || 50;
+        var wblDefSpo2 = wblConfig.defaultSpo2Low || 92;
+        var wblDefBPSys = wblConfig.defaultBPSysHigh || 140;
+        var wblDefBPDia = wblConfig.defaultBPDiaHigh || 90;
+        var wblNotifMethod = wblConfig.emergencyNotifMethod || 'whatsapp';
+
+        html += '<div class="space-y-3">';
+        // Device toggles
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-indigo-50 border border-indigo-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Habilitar CicPlus H2</p>' +
+            '<p class="text-[10px] text-gray-400">Banda de pecho cardiaca</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-cicplus" ' + (wblCic ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-indigo-50 border border-indigo-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Habilitar Colmi P17</p>' +
+            '<p class="text-[10px] text-gray-400">Reloj inteligente con sensores m&uacute;ltiples</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-colmi" ' + (wblColmi ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        // Feature toggles
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-blue-50 border border-blue-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Monitoreo m&eacute;dico</p>' +
+            '<p class="text-[10px] text-gray-400">Enviar alertas a doctores asignados</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-medmon" ' + (wblMedMon ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Alertas de emergencia</p>' +
+            '<p class="text-[10px] text-gray-400">Notificar contactos en valores cr&iacute;ticos</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-emalert" ' + (wblEmAlert ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-purple-50 border border-purple-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Detecci&oacute;n de apnea</p>' +
+            '<p class="text-[10px] text-gray-400">Monitoreo de SpO2 durante sue&ntilde;o</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-apnea" ' + (wblApnea ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-purple-50 border border-purple-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Detecci&oacute;n de arritmias</p>' +
+            '<p class="text-[10px] text-gray-400">An&aacute;lisis de ritmo card&iacute;aco</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-arrhythmia" ' + (wblArr ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        html += '<div class="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200">' +
+          '<div>' +
+            '<p class="text-sm font-bold text-gray-700">Detecci&oacute;n de ca&iacute;das</p>' +
+            '<p class="text-[10px] text-gray-400">Aceler&oacute;metro (si disponible)</p>' +
+          '</div>' +
+          '<label class="toggle-switch"><input type="checkbox" id="wbl-cfg-fall" ' + (wblFall ? 'checked' : '') + '><span class="toggle-slider"></span></label>' +
+        '</div>';
+        // Default thresholds
+        html += '<div class="mt-4 pt-4 border-t border-gray-200">' +
+          '<p class="text-sm font-bold text-gray-700 mb-3">Umbrales de alerta por defecto</p>' +
+        '</div>';
+        html += '<div class="grid grid-cols-2 gap-3">' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">FC alta (reposo) bpm</label>' +
+            '<input type="number" id="wbl-cfg-hr-high" value="' + wblDefHRHigh + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="60" max="200">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">FC baja bpm</label>' +
+            '<input type="number" id="wbl-cfg-hr-low" value="' + wblDefHRLow + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="30" max="80">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">SpO2 bajo %</label>' +
+            '<input type="number" id="wbl-cfg-spo2" value="' + wblDefSpo2 + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="80" max="98">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">PA sist&oacute;lica alta mmHg</label>' +
+            '<input type="number" id="wbl-cfg-bp-sys" value="' + wblDefBPSys + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="100" max="200">' +
+          '</div>' +
+          '<div>' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">PA diast&oacute;lica alta mmHg</label>' +
+            '<input type="number" id="wbl-cfg-bp-dia" value="' + wblDefBPDia + '" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700" min="60" max="120">' +
+          '</div>' +
+        '</div>';
+        // Emergency notification method
+        html += '<div class="mt-3">' +
+          '<label class="block text-xs font-semibold text-gray-600 mb-1">M&eacute;todo de notificaci&oacute;n de emergencia</label>' +
+          '<select id="wbl-cfg-notif-method" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700">' +
+            '<option value="whatsapp"' + (wblNotifMethod === 'whatsapp' ? ' selected' : '') + '>WhatsApp</option>' +
+            '<option value="sms"' + (wblNotifMethod === 'sms' ? ' selected' : '') + '>SMS</option>' +
+            '<option value="both"' + (wblNotifMethod === 'both' ? ' selected' : '') + '>Ambos</option>' +
+          '</select>' +
+        '</div>';
+        // Save button
+        html += '<button id="wbl-cfg-save" class="mt-4 w-full py-3 rounded-xl gradient-accent text-white font-bold text-sm shadow-lg active:scale-[0.98] transition-transform">Guardar Config Wearables</button>' +
+          '<p id="wbl-cfg-saved" class="text-emerald-500 text-xs text-center mt-2 hidden">Configuraci&oacute;n de wearables guardada</p>';
+        html += '</div>';
+        html += sectionFooter;
+
+        html += '</div>';
+        container.innerHTML = html;
+
+        // ===== BIND EVENTS =====
+        bindSectionToggles();
+        bindConditionEvents();
+        bindAllergyEvents();
+        bindSpecialtyEvents();
+        bindFoodRuleEvents();
+        bindExerciseRuleEvents();
+        bindDoctorEvents();
+        bindMercadoPagoEvents();
+        bindWearableConfigEvents();
+      }
+
+      // ===== MERCADO PAGO CONFIG =====
+      function bindMercadoPagoEvents() {
+        var saveBtn = document.getElementById('mp-cfg-save');
+        if (saveBtn) {
+          saveBtn.onclick = function () {
+            var obj = {
+              sandbox: document.getElementById('mp-cfg-sandbox').checked,
+              priceCOP: parseInt(document.getElementById('mp-cfg-cop').value) || 50000,
+              priceUSD: parseInt(document.getElementById('mp-cfg-usd').value) || 30,
+              trialDays: parseInt(document.getElementById('mp-cfg-trial-days').value) || 7,
+              graceDays: parseInt(document.getElementById('mp-cfg-grace-days').value) || 5,
+              deletionDays: parseInt(document.getElementById('mp-cfg-deletion-days').value) || 30,
+              discountTrimestral: parseInt(document.getElementById('mp-cfg-disc-tri').value) || 10,
+              discountAnual: parseInt(document.getElementById('mp-cfg-disc-an').value) || 25,
+              emailReminders: document.getElementById('mp-cfg-email-rem').checked,
+              whatsappReminders: document.getElementById('mp-cfg-wa-rem').checked
+            };
+            localStorage.setItem('dya_config_mercadopago', JSON.stringify(obj));
+            var msg = document.getElementById('mp-cfg-saved');
+            msg.classList.remove('hidden');
+            setTimeout(function () { msg.classList.add('hidden'); }, 2500);
+          };
+        }
+        var testBtn = document.getElementById('mp-test-conn');
+        if (testBtn) {
+          testBtn.onclick = function () {
+            var cfg = getConfig();
+            var pubKey = cfg['MP_PUBLIC_KEY'] || '';
+            var result = document.getElementById('mp-test-result');
+            result.classList.remove('hidden');
+            if (!pubKey) {
+              result.className = 'text-xs text-center mt-2 text-red-500';
+              result.textContent = 'No hay Public Key configurada. Ve a la pesta\u00f1a API Config.';
+              return;
+            }
+            if (!/^(APP_USR|TEST)-/.test(pubKey)) {
+              result.className = 'text-xs text-center mt-2 text-amber-600';
+              result.textContent = 'Formato de Public Key no reconocido. Debe empezar con APP_USR- o TEST-';
+              return;
+            }
+            result.className = 'text-xs text-center mt-2 text-emerald-600';
+            result.textContent = 'Public Key tiene formato v\u00e1lido: ' + pubKey.substring(0, 12) + '...';
+          };
+        }
+      }
+
+      // ===== WEARABLE CONFIG =====
+      function bindWearableConfigEvents() {
+        var saveBtn = document.getElementById('wbl-cfg-save');
+        if (saveBtn) {
+          saveBtn.onclick = function () {
+            var obj = {
+              enableCicPlus: document.getElementById('wbl-cfg-cicplus').checked,
+              enableColmi: document.getElementById('wbl-cfg-colmi').checked,
+              enableMedicalMonitoring: document.getElementById('wbl-cfg-medmon').checked,
+              enableEmergencyAlerts: document.getElementById('wbl-cfg-emalert').checked,
+              enableApneaDetection: document.getElementById('wbl-cfg-apnea').checked,
+              enableArrhythmiaDetection: document.getElementById('wbl-cfg-arrhythmia').checked,
+              enableFallDetection: document.getElementById('wbl-cfg-fall').checked,
+              defaultHRHigh: parseInt(document.getElementById('wbl-cfg-hr-high').value) || 120,
+              defaultHRLow: parseInt(document.getElementById('wbl-cfg-hr-low').value) || 50,
+              defaultSpo2Low: parseInt(document.getElementById('wbl-cfg-spo2').value) || 92,
+              defaultBPSysHigh: parseInt(document.getElementById('wbl-cfg-bp-sys').value) || 140,
+              defaultBPDiaHigh: parseInt(document.getElementById('wbl-cfg-bp-dia').value) || 90,
+              emergencyNotifMethod: document.getElementById('wbl-cfg-notif-method').value || 'whatsapp'
+            };
+            localStorage.setItem('dya_config_wearables', JSON.stringify(obj));
+            var msg = document.getElementById('wbl-cfg-saved');
+            msg.classList.remove('hidden');
+            setTimeout(function () { msg.classList.add('hidden'); }, 2500);
+          };
+        }
+        // Seed defaults on first load
+        if (!localStorage.getItem('dya_config_wearables')) {
+          localStorage.setItem('dya_config_wearables', JSON.stringify({
+            enableCicPlus: true,
+            enableColmi: true,
+            enableMedicalMonitoring: true,
+            enableEmergencyAlerts: true,
+            enableApneaDetection: true,
+            enableArrhythmiaDetection: true,
+            enableFallDetection: false,
+            defaultHRHigh: 120,
+            defaultHRLow: 50,
+            defaultSpo2Low: 92,
+            defaultBPSysHigh: 140,
+            defaultBPDiaHigh: 90,
+            emergencyNotifMethod: 'whatsapp'
+          }));
+        }
+      }
+
+      // ===== Collapsible sections =====
+      function bindSectionToggles() {
+        document.querySelectorAll('.section-toggle').forEach(function (btn) {
+          btn.onclick = function () {
+            var id = btn.dataset.section;
+            var sec = document.getElementById('section-' + id);
+            var chev = document.querySelector('.section-chevron[data-section="' + id + '"]');
+            sec.classList.toggle('open');
+            if (sec.classList.contains('open')) {
+              chev.style.transform = 'rotate(180deg)';
+            } else {
+              chev.style.transform = 'rotate(0deg)';
+            }
+          };
+        });
+      }
+
+      // ===== CONDITIONS =====
+      function bindConditionEvents() {
+        document.getElementById('add-condition').onclick = function () {
+          var name = document.getElementById('new-condition-name').value.trim();
+          var icon = document.getElementById('new-condition-icon').value.trim() || '&#x2695;';
+          if (!name) return;
+          var conds = getConditions();
+          conds.push({ name: name, icon: icon, active: true });
+          saveConditions(conds);
+          renderAppConfigTab(document.getElementById('tab-content'));
+          reopenSection('conditions');
+        };
+        document.querySelectorAll('[data-cond-toggle]').forEach(function (inp) {
+          inp.onchange = function () {
+            var conds = getConditions();
+            conds[parseInt(inp.dataset.condToggle)].active = inp.checked;
+            saveConditions(conds);
+          };
+        });
+        document.querySelectorAll('[data-cond-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            if (!confirm('Eliminar esta condici\u00f3n?')) return;
+            var conds = getConditions();
+            conds.splice(parseInt(btn.dataset.condDel), 1);
+            saveConditions(conds);
+            renderAppConfigTab(document.getElementById('tab-content'));
+            reopenSection('conditions');
+          };
+        });
+      }
+
+      // ===== ALLERGIES =====
+      function bindAllergyEvents() {
+        document.getElementById('add-allergy').onclick = function () {
+          var name = document.getElementById('new-allergy-name').value.trim();
+          var icon = document.getElementById('new-allergy-icon').value.trim() || '&#x26A0;';
+          if (!name) return;
+          var list = getAllergies();
+          list.push({ name: name, icon: icon, active: true });
+          saveAllergies(list);
+          renderAppConfigTab(document.getElementById('tab-content'));
+          reopenSection('allergies');
+        };
+        document.querySelectorAll('[data-allergy-toggle]').forEach(function (inp) {
+          inp.onchange = function () {
+            var list = getAllergies();
+            list[parseInt(inp.dataset.allergyToggle)].active = inp.checked;
+            saveAllergies(list);
+          };
+        });
+        document.querySelectorAll('[data-allergy-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            if (!confirm('Eliminar esta alergia?')) return;
+            var list = getAllergies();
+            list.splice(parseInt(btn.dataset.allergyDel), 1);
+            saveAllergies(list);
+            renderAppConfigTab(document.getElementById('tab-content'));
+            reopenSection('allergies');
+          };
+        });
+      }
+
+      // ===== SPECIALTIES =====
+      function bindSpecialtyEvents() {
+        document.getElementById('add-specialty').onclick = function () {
+          var name = document.getElementById('new-specialty').value.trim();
+          if (!name) return;
+          var list = getSpecialties();
+          list.push(name);
+          saveSpecialties(list);
+          renderAppConfigTab(document.getElementById('tab-content'));
+          reopenSection('specialties');
+        };
+        document.querySelectorAll('[data-spec-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            if (!confirm('Eliminar esta especialidad?')) return;
+            var list = getSpecialties();
+            list.splice(parseInt(btn.dataset.specDel), 1);
+            saveSpecialties(list);
+            renderAppConfigTab(document.getElementById('tab-content'));
+            reopenSection('specialties');
+          };
+        });
+      }
+
+      // ===== FOOD RULES =====
+      function bindFoodRuleEvents() {
+        var sel = document.getElementById('food-condition-select');
+        sel.onchange = function () { renderFoodRulesForCondition(sel.value); };
+      }
+
+      function renderFoodRulesForCondition(condName) {
+        var container = document.getElementById('food-rules-content');
+        if (!condName) { container.innerHTML = ''; return; }
+        var rules = getFoodRules();
+        if (!rules[condName]) { rules[condName] = { recommended: [], notRecommended: [] }; saveFoodRules(rules); }
+        var data = rules[condName];
+
+        var html = '';
+        // Recommended
+        html += '<div class="mb-5">' +
+          '<h4 class="text-sm font-bold text-emerald-700 mb-3 flex items-center gap-2">&#x2705; Alimentos Recomendados</h4>' +
+          '<div class="flex gap-2 mb-3">' +
+            '<input type="text" id="food-rec-name" placeholder="Alimento..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+            '<input type="text" id="food-rec-reason" placeholder="Por qu\u00e9 ayuda..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+            '<button id="add-food-rec" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition shrink-0">+</button>' +
+          '</div>' +
+          '<div class="space-y-2">';
+        data.recommended.forEach(function (item, i) {
+          html += '<div class="flex items-start gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-100">' +
+            '<div class="flex-1"><p class="text-sm font-semibold text-emerald-800">' + esc(item.food) + '</p>' +
+            '<p class="text-xs text-emerald-600">' + esc(item.reason) + '</p></div>' +
+            '<button class="w-7 h-7 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition text-xs font-bold shrink-0" data-food-rec-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div></div>';
+
+        // Not Recommended
+        html += '<div>' +
+          '<h4 class="text-sm font-bold text-red-700 mb-3 flex items-center gap-2">&#x274C; Alimentos NO Recomendados</h4>' +
+          '<div class="flex gap-2 mb-3">' +
+            '<input type="text" id="food-norec-name" placeholder="Alimento..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+            '<input type="text" id="food-norec-reason" placeholder="Por qu\u00e9 evitar..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+            '<button id="add-food-norec" class="px-3 py-2 rounded-lg bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition shrink-0">+</button>' +
+          '</div>' +
+          '<div class="space-y-2">';
+        data.notRecommended.forEach(function (item, i) {
+          html += '<div class="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-100">' +
+            '<div class="flex-1"><p class="text-sm font-semibold text-red-800">' + esc(item.food) + '</p>' +
+            '<p class="text-xs text-red-600">' + esc(item.reason) + '</p></div>' +
+            '<button class="w-7 h-7 rounded-lg bg-red-200 text-red-600 hover:bg-red-300 transition text-xs font-bold shrink-0" data-food-norec-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div></div>';
+
+        container.innerHTML = html;
+
+        // Bind add/delete for food
+        var currentCond = condName;
+        document.getElementById('add-food-rec').onclick = function () {
+          var food = document.getElementById('food-rec-name').value.trim();
+          var reason = document.getElementById('food-rec-reason').value.trim();
+          if (!food) return;
+          var rules = getFoodRules();
+          if (!rules[currentCond]) rules[currentCond] = { recommended: [], notRecommended: [] };
+          rules[currentCond].recommended.push({ food: food, reason: reason || '' });
+          saveFoodRules(rules);
+          renderFoodRulesForCondition(currentCond);
+        };
+        document.getElementById('add-food-norec').onclick = function () {
+          var food = document.getElementById('food-norec-name').value.trim();
+          var reason = document.getElementById('food-norec-reason').value.trim();
+          if (!food) return;
+          var rules = getFoodRules();
+          if (!rules[currentCond]) rules[currentCond] = { recommended: [], notRecommended: [] };
+          rules[currentCond].notRecommended.push({ food: food, reason: reason || '' });
+          saveFoodRules(rules);
+          renderFoodRulesForCondition(currentCond);
+        };
+        document.querySelectorAll('[data-food-rec-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            var rules = getFoodRules();
+            rules[currentCond].recommended.splice(parseInt(btn.dataset.foodRecDel), 1);
+            saveFoodRules(rules);
+            renderFoodRulesForCondition(currentCond);
+          };
+        });
+        document.querySelectorAll('[data-food-norec-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            var rules = getFoodRules();
+            rules[currentCond].notRecommended.splice(parseInt(btn.dataset.foodNorecDel), 1);
+            saveFoodRules(rules);
+            renderFoodRulesForCondition(currentCond);
+          };
+        });
+      }
+
+      // ===== EXERCISE RULES =====
+      function bindExerciseRuleEvents() {
+        var sel = document.getElementById('exercise-condition-select');
+        sel.onchange = function () { renderExerciseRulesForCondition(sel.value); };
+      }
+
+      function renderExerciseRulesForCondition(condName) {
+        var container = document.getElementById('exercise-rules-content');
+        if (!condName) { container.innerHTML = ''; return; }
+        var rules = getExerciseRules();
+        if (!rules[condName]) { rules[condName] = []; saveExerciseRules(rules); }
+        var data = rules[condName];
+
+        var html = '<div class="flex gap-2 mb-4">' +
+          '<input type="text" id="exercise-restriction" placeholder="Restricci\u00f3n..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+          '<select id="exercise-severity" class="w-24 px-2 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm">' +
+            '<option value="Baja">Baja</option><option value="Media">Media</option><option value="Alta" selected>Alta</option>' +
+          '</select>' +
+          '<button id="add-exercise-rule" class="px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition shrink-0">+</button>' +
+          '</div>';
+        html += '<div class="space-y-2">';
+        data.forEach(function (item, i) {
+          var sevColor = item.severity === 'Alta' ? 'bg-red-100 text-red-700' : (item.severity === 'Media' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700');
+          html += '<div class="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-100">' +
+            '<span class="text-[10px] px-2 py-0.5 rounded-full font-bold ' + sevColor + '">' + esc(item.severity) + '</span>' +
+            '<span class="flex-1 text-sm text-gray-700">' + esc(item.restriction) + '</span>' +
+            '<button class="w-7 h-7 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition text-xs font-bold shrink-0" data-exr-del="' + i + '">&#x2715;</button>' +
+            '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+
+        var currentCond = condName;
+        document.getElementById('add-exercise-rule').onclick = function () {
+          var restriction = document.getElementById('exercise-restriction').value.trim();
+          var severity = document.getElementById('exercise-severity').value;
+          if (!restriction) return;
+          var rules = getExerciseRules();
+          if (!rules[currentCond]) rules[currentCond] = [];
+          rules[currentCond].push({ restriction: restriction, severity: severity });
+          saveExerciseRules(rules);
+          renderExerciseRulesForCondition(currentCond);
+        };
+        document.querySelectorAll('[data-exr-del]').forEach(function (btn) {
+          btn.onclick = function () {
+            var rules = getExerciseRules();
+            rules[currentCond].splice(parseInt(btn.dataset.exrDel), 1);
+            saveExerciseRules(rules);
+            renderExerciseRulesForCondition(currentCond);
+          };
+        });
+      }
+
+      // ===== DOCTOR MANAGEMENT =====
+      function bindDoctorEvents() {
+        document.querySelectorAll('[data-doc-toggle]').forEach(function (btn) {
+          btn.onclick = function () {
+            var docs = getDoctors();
+            var idx = parseInt(btn.dataset.docToggle);
+            var d = docs[idx];
+            if (d.status === 'active' || d.status === 'verified') {
+              d.status = 'inactive';
+            } else {
+              d.status = 'active';
+            }
+            docs[idx] = d;
+            saveDoctors(docs);
+            renderAppConfigTab(document.getElementById('tab-content'));
+            reopenSection('doctors');
+          };
+        });
+        document.querySelectorAll('[data-doc-view]').forEach(function (btn) {
+          btn.onclick = function () {
+            var docs = getDoctors();
+            var d = docs[parseInt(btn.dataset.docView)];
+            var patients = d.patients || [];
+            if (patients.length === 0) {
+              alert('Este m\u00e9dico no tiene pacientes asignados.');
+            } else {
+              alert('Pacientes de ' + d.name + ':\n\n' + patients.map(function (p) { return '- ' + (p.name || p); }).join('\n'));
+            }
+          };
+        });
+      }
+
+      // ===== Helper: reopen a section after re-render =====
+      function reopenSection(id) {
+        var sec = document.getElementById('section-' + id);
+        var chev = document.querySelector('.section-chevron[data-section="' + id + '"]');
+        if (sec) { sec.classList.add('open'); }
+        if (chev) { chev.style.transform = 'rotate(180deg)'; }
+      }
+    })();
+  </script>
+</body>
+</html>

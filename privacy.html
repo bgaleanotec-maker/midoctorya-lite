@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366F1">
+  <title>Politica de Privacidad — MiDoctorYa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366F1',
+            'primary-dark': '#4F46E5',
+            navy: '#0f172a',
+            'navy-light': '#1e293b',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    h2 { scroll-margin-top: 80px; }
+  </style>
+</head>
+<body class="bg-navy text-gray-200 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-navy-light/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+      <a href="index.html" class="text-primary hover:text-primary-dark transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <h1 class="text-lg font-bold text-white">Politica de Privacidad</h1>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <p class="text-sm text-gray-400 mb-2">Ultima actualizacion: Abril 2026</p>
+    <p class="text-sm text-gray-400 mb-6">Politica elaborada conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013 de la Republica de Colombia.</p>
+
+    <!-- TOC -->
+    <nav class="bg-navy-light/50 rounded-xl p-4 mb-8 border border-white/5">
+      <p class="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold">Contenido</p>
+      <ol class="text-sm space-y-1.5 text-primary list-decimal list-inside">
+        <li><a href="#responsable" class="hover:underline">Responsable del Tratamiento</a></li>
+        <li><a href="#datos-recopilados" class="hover:underline">Datos que Recopilamos</a></li>
+        <li><a href="#finalidad" class="hover:underline">Finalidad del Tratamiento</a></li>
+        <li><a href="#base-legal" class="hover:underline">Base Legal</a></li>
+        <li><a href="#almacenamiento" class="hover:underline">Almacenamiento de Datos</a></li>
+        <li><a href="#transferencia" class="hover:underline">Transferencia Internacional de Datos</a></li>
+        <li><a href="#derechos" class="hover:underline">Derechos del Titular (ARCO)</a></li>
+        <li><a href="#seguridad" class="hover:underline">Medidas de Seguridad</a></li>
+        <li><a href="#retencion" class="hover:underline">Retencion de Datos</a></li>
+        <li><a href="#menores" class="hover:underline">Menores de Edad</a></li>
+        <li><a href="#cookies" class="hover:underline">Cookies, Service Worker y Almacenamiento Local</a></li>
+        <li><a href="#cambios" class="hover:underline">Cambios a esta Politica</a></li>
+        <li><a href="#autoridad" class="hover:underline">Autoridad de Control</a></li>
+        <li><a href="#contacto-priv" class="hover:underline">Contacto y Canales para PQRS</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. Responsable -->
+    <section id="responsable" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">1</span>
+        Responsable del Tratamiento
+      </h2>
+      <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5 space-y-2 text-sm">
+        <p><strong class="text-gray-300">Razon Social:</strong> [RAZON_SOCIAL]</p>
+        <p><strong class="text-gray-300">NIT:</strong> [NIT]</p>
+        <p><strong class="text-gray-300">Direccion:</strong> [DIRECCION]</p>
+        <p><strong class="text-gray-300">Ciudad:</strong> Bogota D.C., Colombia</p>
+        <p><strong class="text-gray-300">Telefono:</strong> [TELEFONO]</p>
+        <p><strong class="text-gray-300">Correo electronico para datos personales:</strong> [EMAIL_LEGAL]</p>
+      </div>
+      <p class="text-sm mt-3 leading-relaxed">
+        [RAZON_SOCIAL], identificada con NIT [NIT], con domicilio en [DIRECCION], Bogota D.C., Colombia, en calidad de Responsable del Tratamiento de datos personales, informa a los titulares sobre su politica de tratamiento de datos personales conforme a la Ley 1581 de 2012 y sus decretos reglamentarios.
+      </p>
+    </section>
+
+    <!-- 2. Datos que Recopilamos -->
+    <section id="datos-recopilados" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">2</span>
+        Datos que Recopilamos
+      </h2>
+
+      <div class="space-y-4">
+        <!-- Datos de identificacion -->
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">2.1. Datos de Identificacion</h3>
+          <p class="text-sm text-gray-400 mb-2">Clasificacion: Datos personales</p>
+          <ul class="text-sm space-y-1 text-gray-300 list-disc list-inside ml-2">
+            <li>Nombre completo</li>
+            <li>Correo electronico</li>
+            <li>Numero de telefono</li>
+            <li>Genero (para personalizacion de rutinas de ejercicio)</li>
+            <li>Contrasena (almacenada de forma cifrada)</li>
+          </ul>
+        </div>
+
+        <!-- Datos biometricos -->
+        <div class="bg-red-500/5 rounded-xl p-5 border border-red-500/20">
+          <h3 class="text-white font-semibold text-sm mb-2">2.2. Datos Biometricos y de Salud</h3>
+          <p class="text-sm text-red-400 font-semibold mb-2">Clasificacion: DATOS SENSIBLES (Art. 5, Ley 1581 de 2012)</p>
+          <p class="text-sm text-gray-400 mb-2">Obtenidos de Dispositivos Wearable compatibles (CicPlus H2, Colmi P17 y similares). Son estimaciones de sensores de consumo, NO mediciones clinicas.</p>
+          <ul class="text-sm space-y-1 text-gray-300 list-disc list-inside ml-2">
+            <li>Frecuencia cardiaca (BPM)</li>
+            <li>Saturacion de oxigeno estimada (SpO2)</li>
+            <li>Variabilidad de frecuencia cardiaca (HRV)</li>
+            <li>Intervalos R-R</li>
+            <li>Conteo de pasos y distancia estimada</li>
+            <li>Patrones de sueno</li>
+            <li>Nivel de estres estimado</li>
+            <li>Temperatura corporal estimada</li>
+            <li>Presion arterial estimada</li>
+            <li>Calorias quemadas estimadas</li>
+            <li>Indicadores de arritmia (estimacion, NO diagnostico)</li>
+          </ul>
+        </div>
+
+        <!-- Datos de uso -->
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">2.3. Datos de Uso y Habitos</h3>
+          <p class="text-sm text-gray-400 mb-2">Clasificacion: Datos personales</p>
+          <ul class="text-sm space-y-1 text-gray-300 list-disc list-inside ml-2">
+            <li>Registro de ejercicios y rutinas realizadas</li>
+            <li>Descripciones de alimentos para analisis nutricional</li>
+            <li>Registro de estado animico (mood tracker)</li>
+            <li>Diario de estres y factores desencadenantes</li>
+            <li>Sesiones de respiracion guiada</li>
+            <li>Historial de citas medicas agendadas</li>
+          </ul>
+        </div>
+
+        <!-- Datos de pago -->
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">2.4. Datos de Pago</h3>
+          <p class="text-sm text-gray-400 mb-2">Clasificacion: Datos financieros</p>
+          <p class="text-sm text-gray-300">Los datos de pago (numeros de tarjeta, datos bancarios) son procesados directamente por <strong class="text-white">Mercado Pago</strong> y <strong class="text-white">NO son almacenados</strong> por MiDoctorYa. Unicamente conservamos registros de transacciones (monto, fecha, estado) para fines de facturacion y soporte.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Finalidad -->
+    <section id="finalidad" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">3</span>
+        Finalidad del Tratamiento
+      </h2>
+      <div class="text-sm space-y-2 leading-relaxed">
+        <p>Los datos personales seran tratados para las siguientes finalidades:</p>
+        <ul class="list-disc list-inside ml-2 space-y-1.5 text-gray-300">
+          <li><strong class="text-white">Bienestar y seguimiento fitness:</strong> Proporcionar rutinas de ejercicio personalizadas, seguimiento de actividad fisica y recomendaciones de bienestar general.</li>
+          <li><strong class="text-white">Analisis nutricional orientativo:</strong> Ofrecer estimaciones nutricionales basadas en descripciones de alimentos mediante inteligencia artificial.</li>
+          <li><strong class="text-white">Monitoreo de indicadores de bienestar:</strong> Mostrar al Usuario estimaciones de sus datos biometricos obtenidos de Dispositivos Wearable.</li>
+          <li><strong class="text-white">Manejo del estres:</strong> Registrar estado animico, ofrecer ejercicios de respiracion y herramientas de bienestar mental.</li>
+          <li><strong class="text-white">Conexion con profesionales de salud:</strong> Facilitar el agendamiento de citas con Profesionales de Salud habilitados.</li>
+          <li><strong class="text-white">Gestion de la relacion comercial:</strong> Administrar cuentas de usuario, suscripciones, pagos y facturacion.</li>
+          <li><strong class="text-white">Comunicaciones:</strong> Enviar notificaciones relacionadas con el servicio, recordatorios de citas y actualizaciones de la Plataforma.</li>
+          <li><strong class="text-white">Mejora del servicio:</strong> Analizar patrones de uso de forma agregada y anonimizada para mejorar la Plataforma.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 4. Base Legal -->
+    <section id="base-legal" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">4</span>
+        Base Legal para el Tratamiento
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>El tratamiento de datos personales por parte de MiDoctorYa se fundamenta en:</p>
+
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Consentimiento expreso del titular</strong> (Art. 6, Ley 1581 de 2012)</p>
+          <p class="text-gray-400 mt-1">Para el tratamiento de datos sensibles (biometricos y de salud), se requiere autorizacion previa, expresa e informada del titular. Esta autorizacion es solicitada al momento de activar las funcionalidades de wearables y monitoreo de salud.</p>
+        </div>
+
+        <p class="text-gray-300">De conformidad con el Articulo 6 de la Ley 1581 de 2012:</p>
+        <ul class="list-disc list-inside ml-2 space-y-1 text-gray-300">
+          <li>Se informa al titular sobre el caracter <strong class="text-white">facultativo</strong> de las respuestas a preguntas sobre datos sensibles.</li>
+          <li>Se informa sobre los derechos que le asisten como titular.</li>
+          <li>Se informa sobre la finalidad especifica del tratamiento.</li>
+          <li>Se obtiene autorizacion explicita y verificable.</li>
+          <li>La autorizacion se renueva cada 90 dias para funcionalidades sensibles.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Almacenamiento -->
+    <section id="almacenamiento" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">5</span>
+        Almacenamiento de Datos
+      </h2>
+      <div class="space-y-4">
+        <div class="bg-green-500/10 rounded-xl p-5 border border-green-500/20">
+          <h3 class="text-green-400 font-semibold text-sm mb-2">5.1. Datos Biometricos y de Salud — Almacenamiento LOCAL</h3>
+          <p class="text-sm text-gray-300">Los datos biometricos y de salud se almacenan <strong class="text-white">localmente en el dispositivo del Usuario</strong> (localStorage del navegador). Estos datos <strong class="text-white">NO se transmiten ni almacenan en servidores externos</strong> de MiDoctorYa. El Usuario tiene control total sobre estos datos y puede eliminarlos en cualquier momento borrando los datos de la aplicacion.</p>
+        </div>
+
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">5.2. Datos de Cuenta y Citas</h3>
+          <p class="text-sm text-gray-300">Los datos de identificacion, preferencias y citas medicas se almacenan en el backend de la Plataforma (base de datos SQLite) protegido con medidas de seguridad adecuadas.</p>
+        </div>
+
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">5.3. Datos de Pago</h3>
+          <p class="text-sm text-gray-300">Procesados y almacenados directamente por <strong class="text-white">Mercado Pago</strong>. MiDoctorYa no almacena datos financieros sensibles (numeros de tarjeta, CVV). Consulte la <a href="https://www.mercadopago.com.co/ayuda/politica-de-privacidad_299" class="text-primary hover:underline" target="_blank" rel="noopener">Politica de Privacidad de Mercado Pago</a>.</p>
+        </div>
+
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5">
+          <h3 class="text-white font-semibold text-sm mb-2">5.4. Comunicaciones</h3>
+          <p class="text-sm text-gray-300">Las comunicaciones por correo electronico son enviadas a traves de <strong class="text-white">SendGrid (Twilio)</strong>. Las comunicaciones por WhatsApp son enviadas a traves de <strong class="text-white">UltraMSG</strong>. Estos proveedores procesan los datos necesarios (email, telefono, contenido del mensaje) para la entrega de las comunicaciones.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Transferencia Internacional -->
+    <section id="transferencia" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">6</span>
+        Transferencia Internacional de Datos
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>Para la prestacion del servicio, algunos datos personales pueden ser transferidos a los siguientes proveedores internacionales:</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Proveedor</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Pais</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Datos Transferidos</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Finalidad</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-300">
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Google Fit</td>
+                <td class="py-2 px-3">Estados Unidos</td>
+                <td class="py-2 px-3">Datos biometricos (via Puente de Salud)</td>
+                <td class="py-2 px-3">Sincronizacion de datos de wearables propietarios</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Google Gemini</td>
+                <td class="py-2 px-3">Estados Unidos</td>
+                <td class="py-2 px-3">Descripciones de alimentos</td>
+                <td class="py-2 px-3">Analisis nutricional con IA</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Mercado Pago</td>
+                <td class="py-2 px-3">Argentina / Brasil</td>
+                <td class="py-2 px-3">Datos de pago</td>
+                <td class="py-2 px-3">Procesamiento de pagos</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">SendGrid (Twilio)</td>
+                <td class="py-2 px-3">Estados Unidos</td>
+                <td class="py-2 px-3">Email, nombre</td>
+                <td class="py-2 px-3">Envio de comunicaciones por email</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">UltraMSG</td>
+                <td class="py-2 px-3">Internacional</td>
+                <td class="py-2 px-3">Telefono, contenido del mensaje</td>
+                <td class="py-2 px-3">Envio de comunicaciones por WhatsApp</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3">ExerciseDB (RapidAPI)</td>
+                <td class="py-2 px-3">Estados Unidos</td>
+                <td class="py-2 px-3">Consultas de ejercicios (no datos personales)</td>
+                <td class="py-2 px-3">Base de datos de ejercicios</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="text-gray-400 mt-3">De conformidad con el Articulo 26 de la Ley 1581 de 2012, al aceptar esta Politica de Privacidad, el titular autoriza expresamente la transferencia internacional de sus datos personales a los proveedores mencionados, entendiendo que estos pueden estar ubicados en paises que no cuentan con niveles adecuados de proteccion de datos segun la Superintendencia de Industria y Comercio.</p>
+      </div>
+    </section>
+
+    <!-- 7. Derechos ARCO -->
+    <section id="derechos" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">7</span>
+        Derechos del Titular (ARCO)
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>De conformidad con la Ley 1581 de 2012, el titular de los datos personales tiene los siguientes derechos:</p>
+
+        <div class="space-y-3">
+          <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+            <p><strong class="text-white">A — Acceso:</strong> Conocer, consultar y obtener copia de los datos personales que MiDoctorYa posee sobre el titular. Los datos biometricos almacenados localmente son accesibles directamente por el Usuario en su dispositivo.</p>
+          </div>
+          <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+            <p><strong class="text-white">R — Rectificacion:</strong> Solicitar la actualizacion o correccion de datos personales cuando estos sean parciales, inexactos, incompletos, fraccionados o induzcan a error.</p>
+          </div>
+          <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+            <p><strong class="text-white">C — Cancelacion / Supresion:</strong> Solicitar la eliminacion de sus datos personales de las bases de datos de MiDoctorYa cuando: (a) considere que no estan siendo tratados conforme a la ley; (b) hayan dejado de ser necesarios para la finalidad autorizada; (c) se haya superado el periodo autorizado para el tratamiento.</p>
+          </div>
+          <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+            <p><strong class="text-white">O — Oposicion:</strong> Oponerse al tratamiento de sus datos personales para una o varias finalidades especificas, siempre que no exista un deber legal o contractual que impida la supresion.</p>
+          </div>
+          <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+            <p><strong class="text-white">Revocacion del Consentimiento:</strong> Revocar la autorizacion otorgada para el tratamiento de datos personales en cualquier momento, sin efecto retroactivo.</p>
+          </div>
+        </div>
+
+        <h3 class="text-white font-semibold mt-4 mb-2">Procedimiento para Ejercer los Derechos</h3>
+        <ol class="list-decimal list-inside ml-2 space-y-2 text-gray-300">
+          <li>Enviar solicitud escrita al correo electronico <strong class="text-white">[EMAIL_LEGAL]</strong> o a la direccion fisica indicada en esta politica.</li>
+          <li>La solicitud debe contener:
+            <ul class="list-disc list-inside ml-6 mt-1 space-y-1 text-gray-400">
+              <li>Nombre completo y documento de identidad del titular.</li>
+              <li>Descripcion clara y precisa de los datos sobre los cuales se ejerce el derecho.</li>
+              <li>Descripcion de los hechos que motivan la solicitud.</li>
+              <li>Direccion de correspondencia y/o correo electronico para notificaciones.</li>
+              <li>Documentos que soporten la solicitud (si aplica).</li>
+            </ul>
+          </li>
+          <li><strong class="text-white">Plazos de respuesta:</strong>
+            <ul class="list-disc list-inside ml-6 mt-1 space-y-1 text-gray-400">
+              <li>Consultas: maximo diez (10) dias habiles desde la recepcion.</li>
+              <li>Reclamos: maximo quince (15) dias habiles desde la recepcion.</li>
+              <li>Si no es posible atender dentro del plazo, se informara al titular los motivos y la nueva fecha (maximo 5 dias habiles adicionales para consultas, 8 para reclamos).</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 8. Seguridad -->
+    <section id="seguridad" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">8</span>
+        Medidas de Seguridad
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>MiDoctorYa implementa las siguientes medidas tecnicas y organizativas para proteger los datos personales:</p>
+        <ul class="list-disc list-inside ml-2 space-y-1.5 text-gray-300">
+          <li><strong class="text-white">HTTPS:</strong> Toda la comunicacion entre el navegador del Usuario y los servidores se realiza a traves de protocolo seguro HTTPS con cifrado TLS.</li>
+          <li><strong class="text-white">Almacenamiento local de datos sensibles:</strong> Los datos biometricos y de salud se almacenan exclusivamente en el dispositivo del Usuario (localStorage), minimizando la superficie de ataque.</li>
+          <li><strong class="text-white">No almacenamiento de datos financieros:</strong> Los datos de pago son procesados directamente por Mercado Pago. MiDoctorYa no almacena ni tiene acceso a numeros de tarjeta ni datos bancarios.</li>
+          <li><strong class="text-white">Consentimiento modular:</strong> Sistema de autorizacion granular por funcionalidad, con expiracion automatica cada 90 dias.</li>
+          <li><strong class="text-white">Autenticacion:</strong> Acceso protegido por credenciales de usuario con contrasenas almacenadas de forma segura.</li>
+          <li><strong class="text-white">Service Worker:</strong> Funcionalidad offline con cache seguro de recursos de la aplicacion (no de datos personales).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9. Retencion -->
+    <section id="retencion" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">9</span>
+        Retencion de Datos
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Tipo de Dato</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Ubicacion</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Periodo de Retencion</th>
+                <th class="text-left py-2 px-3 text-gray-400 font-semibold">Control</th>
+              </tr>
+            </thead>
+            <tbody class="text-gray-300">
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Datos biometricos</td>
+                <td class="py-2 px-3">Dispositivo del Usuario</td>
+                <td class="py-2 px-3">Controlado por el Usuario</td>
+                <td class="py-2 px-3">Eliminacion directa por el Usuario</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Datos de cuenta</td>
+                <td class="py-2 px-3">Servidor MiDoctorYa</td>
+                <td class="py-2 px-3">Duracion de la relacion + 5 anos</td>
+                <td class="py-2 px-3">Solicitud de supresion</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Consentimientos</td>
+                <td class="py-2 px-3">Dispositivo del Usuario</td>
+                <td class="py-2 px-3">90 dias (renovacion)</td>
+                <td class="py-2 px-3">Revocacion por el Usuario</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-2 px-3">Datos de pago</td>
+                <td class="py-2 px-3">Mercado Pago</td>
+                <td class="py-2 px-3">Segun politica de Mercado Pago</td>
+                <td class="py-2 px-3">Solicitud ante Mercado Pago</td>
+              </tr>
+              <tr>
+                <td class="py-2 px-3">Comunicaciones</td>
+                <td class="py-2 px-3">SendGrid / UltraMSG</td>
+                <td class="py-2 px-3">Segun politica de cada proveedor</td>
+                <td class="py-2 px-3">Solicitud ante el proveedor</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-gray-400">Los datos de cuenta se conservan durante 5 anos adicionales despues de la terminacion de la relacion comercial para cumplir con obligaciones tributarias y legales colombianas.</p>
+      </div>
+    </section>
+
+    <!-- 10. Menores -->
+    <section id="menores" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">10</span>
+        Menores de Edad
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>MiDoctorYa <strong class="text-white">NO esta dirigida a menores de dieciocho (18) anos</strong>. No recopilamos intencionalmente datos personales de menores de edad.</p>
+        <p>De conformidad con el Articulo 7 de la Ley 1581 de 2012 y la Sentencia C-748 de 2011 de la Corte Constitucional, el tratamiento de datos personales de ninos, ninas y adolescentes requiere la autorizacion del representante legal y debe responder al interes superior del menor.</p>
+        <p>Si MiDoctorYa tiene conocimiento de que un menor de 18 anos se ha registrado en la Plataforma sin autorizacion de su representante legal, procedera a eliminar los datos personales recopilados.</p>
+      </div>
+    </section>
+
+    <!-- 11. Cookies -->
+    <section id="cookies" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">11</span>
+        Cookies, Service Worker y Almacenamiento Local
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">11.1. Service Worker.</strong> MiDoctorYa utiliza un Service Worker para habilitar la funcionalidad offline de la aplicacion. El Service Worker almacena en cache recursos estaticos de la aplicacion (HTML, CSS, JavaScript, imagenes) para permitir el uso sin conexion a internet. No almacena datos personales.</p>
+
+        <p><strong class="text-gray-300">11.2. localStorage.</strong> La Plataforma utiliza el almacenamiento local del navegador (localStorage) para:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1 text-gray-300">
+          <li>Datos biometricos y de salud del Usuario.</li>
+          <li>Preferencias de la aplicacion (idioma, tema, genero).</li>
+          <li>Registros de consentimiento.</li>
+          <li>Estado de sesion del Usuario.</li>
+          <li>Datos del mood tracker y diario de estres.</li>
+        </ul>
+
+        <p><strong class="text-gray-300">11.3.</strong> El Usuario puede eliminar estos datos en cualquier momento a traves de las opciones de su navegador (borrar datos de sitios) o desde la configuracion de la aplicacion.</p>
+      </div>
+    </section>
+
+    <!-- 12. Cambios -->
+    <section id="cambios" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">12</span>
+        Cambios a esta Politica
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>MiDoctorYa se reserva el derecho de modificar esta Politica de Privacidad en cualquier momento. Las modificaciones seran comunicadas al titular mediante:</p>
+        <ul class="list-disc list-inside ml-2 space-y-1 text-gray-300">
+          <li>Notificacion dentro de la Plataforma.</li>
+          <li>Correo electronico al titular.</li>
+          <li>Publicacion de la version actualizada en la Plataforma.</li>
+        </ul>
+        <p>Las modificaciones entraran en vigor quince (15) dias calendario despues de su comunicacion. El uso continuado de la Plataforma despues de este plazo constituye la aceptacion de la nueva Politica. Si el titular no esta de acuerdo, podra revocar su autorizacion y solicitar la eliminacion de sus datos.</p>
+      </div>
+    </section>
+
+    <!-- 13. Autoridad de Control -->
+    <section id="autoridad" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">13</span>
+        Autoridad de Control
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p>La autoridad competente para la vigilancia y control del tratamiento de datos personales en Colombia es la <strong class="text-white">Superintendencia de Industria y Comercio (SIC)</strong>.</p>
+        <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5 space-y-2">
+          <p><strong class="text-gray-300">Entidad:</strong> Superintendencia de Industria y Comercio — Delegatura para la Proteccion de Datos Personales</p>
+          <p><strong class="text-gray-300">Direccion:</strong> Carrera 13 No. 27-00, Pisos 1 al 7, Bogota D.C.</p>
+          <p><strong class="text-gray-300">Telefono:</strong> (601) 587 0000</p>
+          <p><strong class="text-gray-300">Linea gratuita:</strong> 01 8000 910 165</p>
+          <p><strong class="text-gray-300">Sitio web:</strong> <a href="https://www.sic.gov.co" class="text-primary hover:underline" target="_blank" rel="noopener">www.sic.gov.co</a></p>
+        </div>
+        <p class="text-gray-400">El titular puede presentar quejas ante la SIC cuando considere que MiDoctorYa ha vulnerado sus derechos en materia de proteccion de datos personales, una vez haya agotado el tramite de consulta o reclamo directamente ante el Responsable.</p>
+      </div>
+    </section>
+
+    <!-- 14. Contacto -->
+    <section id="contacto-priv" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">14</span>
+        Contacto y Canales para PQRS
+      </h2>
+      <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5 space-y-3 text-sm">
+        <p>Para ejercer sus derechos, presentar consultas, quejas, reclamos o solicitudes (PQRS) relacionadas con el tratamiento de datos personales:</p>
+
+        <div class="space-y-2">
+          <p><strong class="text-gray-300">Correo electronico:</strong> [EMAIL_LEGAL]</p>
+          <p><strong class="text-gray-300">Telefono:</strong> [TELEFONO]</p>
+          <p><strong class="text-gray-300">Direccion fisica:</strong> [DIRECCION], Bogota D.C., Colombia</p>
+          <p><strong class="text-gray-300">Horario de atencion:</strong> Lunes a viernes, 8:00 a.m. a 6:00 p.m. (hora Colombia, GMT-5)</p>
+        </div>
+
+        <div class="border-t border-white/10 pt-3 mt-3">
+          <p class="text-gray-400">Asunto del correo sugerido:</p>
+          <ul class="list-disc list-inside ml-2 space-y-1 text-gray-400 mt-1">
+            <li>Para consultas: "Consulta Datos Personales — [Nombre del Titular]"</li>
+            <li>Para reclamos: "Reclamo Datos Personales — [Nombre del Titular]"</li>
+            <li>Para supresion: "Solicitud de Supresion — [Nombre del Titular]"</li>
+            <li>Para revocacion: "Revocacion de Autorizacion — [Nombre del Titular]"</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="border-t border-white/10 pt-6 mt-10 text-center">
+      <p class="text-xs text-gray-500">MiDoctorYa — Plataforma de Bienestar y Entrenamiento</p>
+      <p class="text-xs text-gray-500 mt-1">Esta Politica de Privacidad fue actualizada en Abril 2026.</p>
+      <div class="flex justify-center gap-4 mt-3">
+        <a href="terms.html" class="text-xs text-primary hover:underline">Terminos y Condiciones</a>
+        <a href="index.html" class="text-xs text-primary hover:underline">Volver a la App</a>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

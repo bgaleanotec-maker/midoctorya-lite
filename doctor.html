@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiDoctorYa - Portal del Doctor</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: { DEFAULT: '#0f172a', light: '#1e3a5f' },
+            primary: { DEFAULT: '#6366F1', light: '#818CF8' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif; }
+    .gradient-navy { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); }
+    .gradient-primary { background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); }
+    .gradient-accent { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+    .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.4s ease forwards; }
+    .animate-delay-1 { animation-delay: 100ms; opacity: 0; }
+    .animate-delay-2 { animation-delay: 200ms; opacity: 0; }
+    .animate-delay-3 { animation-delay: 300ms; opacity: 0; }
+    .tab-active { border-bottom: 2px solid #6366F1; color: #6366F1; font-weight: 700; }
+    .tab-inactive { border-bottom: 2px solid transparent; color: #9CA3AF; }
+    input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .slot-available { background: #10B981; color: white; cursor: pointer; }
+    .slot-empty { background: #F3F4F6; cursor: pointer; }
+    .slot-empty:hover { background: #E0E7FF; }
+    .chk-label { display: flex; align-items: center; gap: 6px; padding: 4px 0; cursor: pointer; }
+    .chk-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: #6366F1; cursor: pointer; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- ====== LOGIN SCREEN ====== -->
+  <div id="login-screen" class="min-h-screen flex flex-col">
+    <div class="gradient-navy text-white px-5 pt-14 pb-10 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <p class="text-xs text-white/40 mb-1">MiDoctorYa</p>
+      <h1 class="text-2xl font-bold">Portal del Doctor</h1>
+      <p class="text-sm text-white/50 mt-1">Acceso para profesionales de salud</p>
+    </div>
+    <div class="flex-1 flex items-start justify-center px-4 -mt-5">
+      <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm animate-fade-in">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl shadow-lg">&#x1FA7A;</div>
+        <h3 class="text-lg font-bold text-gray-800 mb-1 text-center">Bienvenido, Doctor</h3>
+        <p class="text-sm text-gray-400 mb-5 text-center">Ingresa tus datos para continuar</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre completo <span class="text-red-400">*</span></label>
+            <input type="text" id="login-name" placeholder="Dr. Juan P&eacute;rez" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-300" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Email (Gmail) <span class="text-red-400">*</span></label>
+            <input type="email" id="login-email" placeholder="doctor@gmail.com" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-300" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">N&uacute;mero de Tarjeta Profesional / Habilitaci&oacute;n <span class="text-red-400">*</span></label>
+            <input type="text" id="login-license" placeholder="Ej: TP-123456" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-300" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Especialidades <span class="text-red-400">*</span></label>
+            <div id="login-specialties-container" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 max-h-40 overflow-y-auto"></div>
+          </div>
+          <button id="login-submit" class="w-full py-3 rounded-xl gradient-primary text-white font-bold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-transform">Entrar</button>
+          <p id="login-error" class="text-red-500 text-xs text-center hidden"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== DOCTOR DASHBOARD ====== -->
+  <div id="doctor-dashboard" class="hidden">
+    <!-- Header -->
+    <div class="gradient-navy text-white px-5 pt-10 pb-8 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <p class="text-xs text-white/40 mb-1">MiDoctorYa Doctor</p>
+          <h1 class="text-xl font-bold" id="header-name">Dr. Nombre</h1>
+          <p class="text-xs text-white/50 mt-0.5" id="header-specialty">Especialidad</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+          <button id="toggle-status" class="px-3 py-1.5 rounded-lg text-[11px] font-bold transition"></button>
+          <button id="btn-darse-baja" class="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-300 text-[11px] font-bold hover:bg-red-500/30 transition">Darse de baja</button>
+          <button id="doctor-logout" class="px-3 py-1.5 rounded-lg bg-white/10 text-white/70 text-[11px] font-semibold hover:bg-white/20 transition">Salir</button>
+        </div>
+      </div>
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-2 gap-2 mt-2">
+        <div class="glass rounded-xl p-3 text-center">
+          <p class="text-2xl font-black" id="stat-appointments">0</p>
+          <p class="text-[10px] text-white/50 uppercase font-semibold">Citas Hoy</p>
+        </div>
+        <div class="glass rounded-xl p-3 text-center">
+          <p class="text-2xl font-black" id="stat-patients">0</p>
+          <p class="text-[10px] text-white/50 uppercase font-semibold">Pacientes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="px-4 -mt-3 mb-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex overflow-x-auto" id="main-tabs">
+        <button data-tab="appointments" class="flex-1 py-3 text-[11px] sm:text-sm text-center tab-active transition whitespace-nowrap px-2">Mis Citas</button>
+        <button data-tab="patients" class="flex-1 py-3 text-[11px] sm:text-sm text-center tab-inactive transition whitespace-nowrap px-2">Pacientes</button>
+        <button data-tab="calendar" class="flex-1 py-3 text-[11px] sm:text-sm text-center tab-inactive transition whitespace-nowrap px-2">Calendario</button>
+        <button data-tab="services" class="flex-1 py-3 text-[11px] sm:text-sm text-center tab-inactive transition whitespace-nowrap px-2">Servicios</button>
+        <button data-tab="monitoring" class="flex-1 py-3 text-[11px] sm:text-sm text-center tab-inactive transition whitespace-nowrap px-2">Monitoreo</button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="px-4 pb-10" id="tab-content"></div>
+  </div>
+
+  <!-- ====== PATIENT DETAIL MODAL ====== -->
+  <div id="patient-modal" class="hidden fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
+    <div class="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl shadow-2xl" id="patient-modal-content"></div>
+  </div>
+
+  <!-- ====== CONFIRM DIALOG ====== -->
+  <div id="confirm-dialog" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs mx-4">
+      <p id="confirm-msg" class="text-sm text-gray-700 mb-4 text-center"></p>
+      <div class="flex gap-2">
+        <button id="confirm-yes" class="flex-1 py-2.5 rounded-xl gradient-primary text-white font-bold text-sm">Confirmar</button>
+        <button id="confirm-no" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    // ==================== CONSTANTS ====================
+    var DOCTOR_KEY = 'dya_doctor';
+    var DOCTORS_LIST_KEY = 'dya_doctors_list';
+    var APPOINTMENTS_KEY = 'dya_appointments';
+    var USERS_KEY = 'dya_admin_users';
+    var AUDIT_LOG_KEY = 'dya_audit_log';
+
+    var DEFAULT_SPECIALTIES = ['Acompa\u00f1amiento Fitness', 'Nutrici\u00f3n', 'Psicolog\u00eda', 'Medicina General'];
+    var DEFAULT_CONDITIONS = ['Diabetes', 'Hipertensi\u00f3n', 'Asma', 'Obesidad', 'Artritis', 'Hipotiroidismo', 'Anemia', 'Cardiopat\u00eda', 'Insuficiencia renal', 'Depresi\u00f3n'];
+    var DEFAULT_ALLERGIES = ['Penicilina', 'Mariscos', 'Gluten', 'Lactosa', 'Frutos secos', 'Huevo', 'Soya', 'Aspirina', 'Sulfas', 'L\u00e1tex'];
+    var DEFAULT_FOOD_RULES = {
+      'Diabetes': ['Evitar az\u00facares refinados', 'Reducir carbohidratos simples', 'Preferir granos integrales', 'Controlar porciones de frutas'],
+      'Hipertensi\u00f3n': ['Reducir consumo de sal', 'Evitar alimentos procesados', 'Aumentar consumo de potasio', 'Limitar cafe\u00edna'],
+      'Obesidad': ['Reducir calor\u00edas totales', 'Evitar comida r\u00e1pida', 'Aumentar fibra', 'Porciones controladas'],
+      'Asma': ['Evitar sulfitos', 'Precauci\u00f3n con l\u00e1cteos si hay sensibilidad'],
+      'Cardiopat\u00eda': ['Dieta baja en grasas saturadas', 'Aumentar omega-3', 'Reducir sodio'],
+      'Insuficiencia renal': ['Controlar prote\u00ednas', 'Limitar potasio', 'Reducir f\u00f3sforo', 'Controlar l\u00edquidos'],
+      'Anemia': ['Aumentar hierro (carnes rojas, legumbres)', 'Consumir vitamina C para absorci\u00f3n', 'Evitar caf\u00e9 con comidas']
+    };
+    var DEFAULT_EXERCISE_RULES = {
+      'Diabetes': ['Monitorear glucosa antes y despu\u00e9s del ejercicio', 'Evitar ejercicio intenso sin comer', 'Llevar fuente de glucosa r\u00e1pida'],
+      'Hipertensi\u00f3n': ['Evitar ejercicios isom\u00e9tricos intensos', 'No levantar pesos excesivos', 'Preferir ejercicio aer\u00f3bico moderado'],
+      'Obesidad': ['Iniciar con baja intensidad', 'Progreso gradual', 'Evitar impacto alto en articulaciones'],
+      'Asma': ['Calentamiento prolongado', 'Evitar aire fr\u00edo seco', 'Tener inhalador disponible'],
+      'Cardiopat\u00eda': ['Ejercicio supervisado', 'Evitar esfuerzo m\u00e1ximo', 'Monitorear frecuencia card\u00edaca'],
+      'Artritis': ['Evitar impacto en articulaciones afectadas', 'Preferir nataci\u00f3n o bicicleta', 'Ejercicios de rango de movimiento'],
+      'Insuficiencia renal': ['Ejercicio de baja a moderada intensidad', 'Hidrataci\u00f3n controlada']
+    };
+
+    // ==================== STATE ====================
+    var currentTab = 'appointments';
+    var doctor = null;
+
+    // ==================== HELPERS ====================
+    function getJSON(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+      catch(e) { return fallback; }
+    }
+    function setJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+    function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2,6); }
+    function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function getSpecialties() {
+      return getJSON('dya_config_specialties', DEFAULT_SPECIALTIES);
+    }
+    function getConditions() {
+      return getJSON('dya_config_conditions', DEFAULT_CONDITIONS);
+    }
+    function getAllergies() {
+      return getJSON('dya_config_allergies', DEFAULT_ALLERGIES);
+    }
+    function getFoodRules() {
+      return getJSON('dya_config_food_rules', DEFAULT_FOOD_RULES);
+    }
+    function getExerciseRules() {
+      return getJSON('dya_config_exercise_rules', DEFAULT_EXERCISE_RULES);
+    }
+
+    // ==================== AUDIT LOG ====================
+    function addAuditLog(action, patientEmail, detail) {
+      var logs = getJSON(AUDIT_LOG_KEY, []);
+      logs.push({
+        action: action,
+        doctorEmail: doctor.email,
+        patientEmail: patientEmail,
+        detail: detail,
+        timestamp: new Date().toISOString()
+      });
+      setJSON(AUDIT_LOG_KEY, logs);
+    }
+
+    // ==================== CONFIRM DIALOG ====================
+    function showConfirm(msg, onYes) {
+      var dlg = document.getElementById('confirm-dialog');
+      document.getElementById('confirm-msg').textContent = msg;
+      dlg.classList.remove('hidden');
+      document.getElementById('confirm-yes').onclick = function() {
+        dlg.classList.add('hidden');
+        if (onYes) onYes();
+      };
+      document.getElementById('confirm-no').onclick = function() {
+        dlg.classList.add('hidden');
+      };
+    }
+
+    // ==================== LOGIN ====================
+    var loginScreen = document.getElementById('login-screen');
+    var dashboard = document.getElementById('doctor-dashboard');
+
+    // Populate specialties checkboxes on login form
+    function renderLoginSpecialties() {
+      var container = document.getElementById('login-specialties-container');
+      var specs = getSpecialties();
+      var html = '';
+      specs.forEach(function(s) {
+        html += '<label class="chk-label text-sm"><input type="checkbox" name="login-spec" value="' + escHtml(s) + '"> ' + escHtml(s) + '</label>';
+      });
+      container.innerHTML = html;
+    }
+    renderLoginSpecialties();
+
+    function tryAutoLogin() {
+      var saved = getJSON(DOCTOR_KEY, null);
+      if (saved && saved.name && saved.email) {
+        // Check if doctor is inactive
+        var list = getJSON(DOCTORS_LIST_KEY, []);
+        var found = list.find(function(d) { return d.email === saved.email; });
+        if (found && found.available === false) {
+          saved.available = false;
+        }
+        doctor = saved;
+        showDashboard();
+      }
+    }
+
+    function showLoginError(msg) {
+      var el = document.getElementById('login-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    document.getElementById('login-submit').onclick = function() {
+      var name = document.getElementById('login-name').value.trim();
+      var email = document.getElementById('login-email').value.trim();
+      var license = document.getElementById('login-license').value.trim();
+      var specChecks = document.querySelectorAll('input[name="login-spec"]:checked');
+      var specialties = [];
+      specChecks.forEach(function(c) { specialties.push(c.value); });
+
+      if (!name || !email || !license) {
+        showLoginError('Por favor completa todos los campos obligatorios');
+        return;
+      }
+      if (!email.toLowerCase().endsWith('@gmail.com')) {
+        showLoginError('El email debe ser una cuenta de Gmail (@gmail.com)');
+        return;
+      }
+      if (specialties.length === 0) {
+        showLoginError('Selecciona al menos una especialidad');
+        return;
+      }
+
+      doctor = {
+        name: name,
+        email: email,
+        license: license,
+        specialties: specialties,
+        specialty: specialties.join(', '),
+        available: true,
+        status: 'available',
+        registeredAt: new Date().toISOString()
+      };
+      setJSON(DOCTOR_KEY, doctor);
+
+      // Add to doctors list
+      var list = getJSON(DOCTORS_LIST_KEY, []);
+      var exists = list.findIndex(function(d) { return d.email === email; });
+      if (exists >= 0) {
+        list[exists] = Object.assign(list[exists], doctor);
+      } else {
+        list.push(doctor);
+      }
+      setJSON(DOCTORS_LIST_KEY, list);
+      showDashboard();
+    };
+
+    document.getElementById('doctor-logout').onclick = function() {
+      localStorage.removeItem(DOCTOR_KEY);
+      doctor = null;
+      dashboard.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      document.getElementById('login-name').value = '';
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-license').value = '';
+      renderLoginSpecialties();
+      document.getElementById('login-error').classList.add('hidden');
+    };
+
+    function showDashboard() {
+      loginScreen.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      renderDashboard();
+    }
+
+    // ==================== DASHBOARD ====================
+    function renderDashboard() {
+      // Header
+      document.getElementById('header-name').textContent = doctor.name;
+      document.getElementById('header-specialty').textContent = doctor.specialty || (doctor.specialties || []).join(', ') || 'Sin especialidad';
+      renderStatusToggle();
+      renderDarseDeBaja();
+      renderStats();
+      renderTabs();
+      renderTabContent();
+    }
+
+    function renderStatusToggle() {
+      var btn = document.getElementById('toggle-status');
+      var isAvail = doctor.status !== 'unavailable';
+      btn.textContent = isAvail ? 'Disponible' : 'No disponible';
+      btn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition ' +
+        (isAvail ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300');
+      btn.onclick = function() {
+        doctor.status = isAvail ? 'unavailable' : 'available';
+        setJSON(DOCTOR_KEY, doctor);
+        // Update doctors list too
+        var list = getJSON(DOCTORS_LIST_KEY, []);
+        var idx = list.findIndex(function(d) { return d.email === doctor.email; });
+        if (idx >= 0) { list[idx].status = doctor.status; setJSON(DOCTORS_LIST_KEY, list); }
+        renderStatusToggle();
+      };
+    }
+
+    function renderDarseDeBaja() {
+      var btn = document.getElementById('btn-darse-baja');
+      var isActive = doctor.available !== false;
+      btn.textContent = isActive ? 'Darse de baja' : 'Darse de alta';
+      btn.className = 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition ' +
+        (isActive ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30');
+      btn.onclick = function() {
+        if (isActive) {
+          showConfirm('Esta acci\u00f3n te marcar\u00e1 como inactivo en la plataforma. Los pacientes no podr\u00e1n agendar citas contigo. \u00bfConfirmar?', function() {
+            doctor.available = false;
+            setJSON(DOCTOR_KEY, doctor);
+            var list = getJSON(DOCTORS_LIST_KEY, []);
+            var idx = list.findIndex(function(d) { return d.email === doctor.email; });
+            if (idx >= 0) { list[idx].available = false; setJSON(DOCTORS_LIST_KEY, list); }
+            renderDarseDeBaja();
+          });
+        } else {
+          showConfirm('\u00bfDeseas reactivar tu cuenta en la plataforma?', function() {
+            doctor.available = true;
+            setJSON(DOCTOR_KEY, doctor);
+            var list = getJSON(DOCTORS_LIST_KEY, []);
+            var idx = list.findIndex(function(d) { return d.email === doctor.email; });
+            if (idx >= 0) { list[idx].available = true; setJSON(DOCTORS_LIST_KEY, list); }
+            renderDarseDeBaja();
+          });
+        }
+      };
+    }
+
+    function getAppointments() {
+      return getJSON(APPOINTMENTS_KEY, []).filter(function(a) { return a.doctorEmail === doctor.email; });
+    }
+
+    function getPatients() {
+      var appts = getAppointments();
+      var emails = {};
+      appts.forEach(function(a) { if (a.patientEmail) emails[a.patientEmail] = true; });
+      var users = getJSON(USERS_KEY, []);
+      var patients = users.filter(function(u) {
+        return emails[u.email] || u.assignedDoctor === doctor.email;
+      });
+      if (patients.length === 0 && users.length === 0) {
+        return getDemoPatients();
+      }
+      return patients;
+    }
+
+    function getDemoPatients() {
+      return [
+        {
+          name: 'Maria Garcia', email: 'maria@gmail.com', phone: '+57 300 123 4567',
+          allergies: 'Penicilina, Mariscos', conditions: 'Hipertensi\u00f3n leve',
+          dietRestrictions: 'Sin gluten', exerciseRestrictions: 'No impacto alto en rodillas',
+          habits: 'Caminar 30min diario, Tomar agua 2L', status: 'active'
+        },
+        {
+          name: 'Carlos Rodriguez', email: 'carlos@gmail.com', phone: '+57 311 987 6543',
+          allergies: '', conditions: 'Diabetes tipo 2', dietRestrictions: 'Bajo en az\u00facar',
+          exerciseRestrictions: 'Control de glucosa antes de ejercicio', habits: 'Ejercicio 45min, Control glucosa',
+          status: 'active'
+        }
+      ];
+    }
+
+    function renderStats() {
+      var appts = getAppointments();
+      var today = todayStr();
+      var todayAppts = appts.filter(function(a) { return a.date === today; });
+      var patients = getPatients();
+      document.getElementById('stat-appointments').textContent = todayAppts.length;
+      document.getElementById('stat-patients').textContent = patients.length;
+    }
+
+    // ==================== TABS ====================
+    function renderTabs() {
+      var tabs = document.querySelectorAll('#main-tabs button');
+      tabs.forEach(function(btn) {
+        btn.className = 'flex-1 py-3 text-[11px] sm:text-sm text-center transition whitespace-nowrap px-2 ' +
+          (btn.dataset.tab === currentTab ? 'tab-active' : 'tab-inactive');
+        btn.onclick = function() {
+          currentTab = btn.dataset.tab;
+          renderTabs();
+          renderTabContent();
+        };
+      });
+    }
+
+    function renderTabContent() {
+      var c = document.getElementById('tab-content');
+      switch(currentTab) {
+        case 'appointments': renderAppointmentsTab(c); break;
+        case 'patients': renderPatientsTab(c); break;
+        case 'calendar': renderCalendarTab(c); break;
+        case 'services': renderServicesTab(c); break;
+        case 'monitoring': renderMonitoringTab(c); break;
+      }
+    }
+
+    // ==================== APPOINTMENTS TAB ====================
+    function renderAppointmentsTab(container) {
+      var appts = getAppointments();
+      var html = '';
+
+      html += '<div class="mb-4"><button id="add-appt-btn" class="w-full py-3 rounded-xl gradient-primary text-white font-bold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-transform">+ Nueva Cita</button></div>';
+
+      html += '<div id="add-appt-form" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 animate-fade-in">' +
+        '<h4 class="font-bold text-gray-800 mb-3">Agendar Cita</h4>' +
+        '<div class="space-y-3">' +
+          '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Nombre del paciente</label>' +
+          '<input type="text" id="appt-patient-name" placeholder="Nombre completo" class="w-full px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm"></div>' +
+          '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Email del paciente</label>' +
+          '<input type="email" id="appt-patient-email" placeholder="paciente@gmail.com" class="w-full px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm"></div>' +
+          '<div class="grid grid-cols-2 gap-3">' +
+            '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Fecha</label>' +
+            '<input type="date" id="appt-date" class="w-full px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm"></div>' +
+            '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Hora</label>' +
+            '<input type="time" id="appt-time" class="w-full px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm"></div>' +
+          '</div>' +
+          '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo de consulta</label>' +
+          '<select id="appt-type" class="w-full px-4 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+            '<option>Acompa\u00f1amiento Fitness</option><option>Seguimiento</option><option>Primera consulta</option><option>Control</option>' +
+          '</select></div>' +
+          '<div class="flex gap-2">' +
+            '<button id="appt-save" class="flex-1 py-2.5 rounded-xl gradient-accent text-white font-bold text-sm">Guardar</button>' +
+            '<button id="appt-cancel" class="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-500 font-bold text-sm">Cancelar</button>' +
+          '</div>' +
+        '</div></div>';
+
+      if (appts.length === 0) {
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center animate-fade-in">' +
+          '<p class="text-4xl mb-3">&#x1F4C5;</p>' +
+          '<p class="text-gray-400 text-sm">No hay citas programadas</p>' +
+          '<p class="text-gray-300 text-xs mt-1">Usa el bot\u00f3n de arriba para agendar una</p>' +
+        '</div>';
+      } else {
+        appts.sort(function(a,b) { return (a.date+a.time) < (b.date+b.time) ? -1 : 1; });
+        html += '<div class="space-y-3">';
+        appts.forEach(function(a, i) {
+          var isPast = a.date < todayStr();
+          var statusColor = a.status === 'completed' ? 'bg-emerald-50 text-emerald-600' :
+                            a.status === 'cancelled' ? 'bg-red-50 text-red-500' :
+                            isPast ? 'bg-gray-50 text-gray-400' : 'bg-indigo-50 text-indigo-600';
+          var statusText = a.status === 'completed' ? 'Completada' :
+                           a.status === 'cancelled' ? 'Cancelada' :
+                           isPast ? 'Pasada' : 'Pendiente';
+          html += '<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-fade-in" style="animation-delay:' + (i*60) + 'ms">' +
+            '<div class="flex items-start justify-between mb-2">' +
+              '<div><p class="text-sm font-bold text-gray-800">' + escHtml(a.patientName || 'Paciente') + '</p>' +
+              '<p class="text-[11px] text-gray-400">' + escHtml(a.type) + '</p></div>' +
+              '<span class="text-[10px] px-2 py-1 rounded-full font-bold ' + statusColor + '">' + statusText + '</span>' +
+            '</div>' +
+            '<div class="flex items-center gap-3 text-[11px] text-gray-400 mb-3">' +
+              '<span>&#x1F4C5; ' + escHtml(a.date) + '</span>' +
+              '<span>&#x1F552; ' + escHtml(a.time) + '</span>' +
+            '</div>' +
+            '<div class="flex gap-2">' +
+              '<button class="appt-jitsi flex-1 py-2 rounded-lg gradient-accent text-white text-[11px] font-bold" data-id="' + a.id + '">Iniciar Consulta</button>' +
+              '<button class="appt-profile flex-1 py-2 rounded-lg bg-indigo-50 text-indigo-600 text-[11px] font-bold" data-email="' + escHtml(a.patientEmail||'') + '" data-name="' + escHtml(a.patientName||'') + '">Ver Perfil</button>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+
+      document.getElementById('add-appt-btn').onclick = function() {
+        document.getElementById('add-appt-form').classList.toggle('hidden');
+        var dateInput = document.getElementById('appt-date');
+        if (!dateInput.value) dateInput.value = todayStr();
+      };
+
+      var cancelBtn = document.getElementById('appt-cancel');
+      if (cancelBtn) cancelBtn.onclick = function() { document.getElementById('add-appt-form').classList.add('hidden'); };
+
+      var saveBtn = document.getElementById('appt-save');
+      if (saveBtn) saveBtn.onclick = function() {
+        var name = document.getElementById('appt-patient-name').value.trim();
+        var email = document.getElementById('appt-patient-email').value.trim();
+        var date = document.getElementById('appt-date').value;
+        var time = document.getElementById('appt-time').value;
+        var type = document.getElementById('appt-type').value;
+        if (!name || !date || !time) return;
+        var allAppts = getJSON(APPOINTMENTS_KEY, []);
+        allAppts.push({
+          id: genId(), doctorEmail: doctor.email, doctorName: doctor.name,
+          patientName: name, patientEmail: email, date: date, time: time,
+          type: type, status: 'pending', createdAt: new Date().toISOString()
+        });
+        setJSON(APPOINTMENTS_KEY, allAppts);
+        document.getElementById('add-appt-form').classList.add('hidden');
+        renderDashboard();
+      };
+
+      container.querySelectorAll('.appt-jitsi').forEach(function(btn) {
+        btn.onclick = function() {
+          var link = 'https://meet.jit.si/MiDoctorYa-' + btn.dataset.id;
+          window.open(link, '_blank');
+        };
+      });
+
+      container.querySelectorAll('.appt-profile').forEach(function(btn) {
+        btn.onclick = function() {
+          openPatientModal(btn.dataset.email, btn.dataset.name);
+        };
+      });
+    }
+
+    // ==================== PATIENTS TAB ====================
+    function renderPatientsTab(container) {
+      var patients = getPatients();
+      var html = '';
+
+      if (patients.length === 0) {
+        html = '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center animate-fade-in">' +
+          '<p class="text-4xl mb-3">&#x1F465;</p>' +
+          '<p class="text-gray-400 text-sm">No hay pacientes asignados a\u00fan</p>' +
+        '</div>';
+      } else {
+        html = '<div class="space-y-3">';
+        patients.forEach(function(p, i) {
+          var initial = (p.name || 'P')[0].toUpperCase();
+          var hasAllergies = p.allergies && p.allergies.trim().length > 0;
+          html += '<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 animate-fade-in cursor-pointer patient-card" data-email="' + escHtml(p.email) + '" data-name="' + escHtml(p.name||'') + '" style="animation-delay:' + (i*60) + 'ms">' +
+            '<div class="flex items-center gap-3">' +
+              '<div class="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shrink-0">' + initial + '</div>' +
+              '<div class="flex-1 min-w-0">' +
+                '<p class="text-sm font-bold text-gray-800 truncate">' + escHtml(p.name || 'Sin nombre') + '</p>' +
+                '<p class="text-[11px] text-gray-400 truncate">' + escHtml(p.email || '') + '</p>' +
+                (p.phone ? '<p class="text-[10px] text-gray-400">&#x1F4F1; ' + escHtml(p.phone) + '</p>' : '') +
+              '</div>' +
+              (hasAllergies ? '<span class="text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-600 font-bold shrink-0">&#x26A0; Alergias</span>' : '') +
+            '</div>' +
+            (hasAllergies ? '<div class="mt-2 p-2 rounded-lg bg-red-50 border border-red-200"><p class="text-[11px] text-red-600 font-bold">&#x1F6A8; ALERGIAS: ' + escHtml(p.allergies) + '</p></div>' : '') +
+            (p.conditions ? '<div class="mt-2 flex flex-wrap gap-1"><span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold">' + escHtml(p.conditions) + '</span></div>' : '') +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+
+      container.querySelectorAll('.patient-card').forEach(function(card) {
+        card.onclick = function() {
+          openPatientModal(card.dataset.email, card.dataset.name);
+        };
+      });
+    }
+
+    // ==================== PATIENT PROFILE HELPERS ====================
+    function getPatientProfile(email) {
+      return getJSON('dya_patient_profile_' + email, { medicalConditions: [], conditionsMeta: {}, allergies: [], allergiesMeta: {} });
+    }
+    function setPatientProfile(email, profile) {
+      setJSON('dya_patient_profile_' + email, profile);
+    }
+    function getPatientRecs(email) {
+      return getJSON('dya_patient_recs_' + email, []);
+    }
+    function setPatientRecs(email, recs) {
+      setJSON('dya_patient_recs_' + email, recs);
+    }
+
+    // ==================== PATIENT MODAL ====================
+    function openPatientModal(email, name) {
+      var modal = document.getElementById('patient-modal');
+      var content = document.getElementById('patient-modal-content');
+
+      // Find patient data
+      var patients = getPatients();
+      var patient = patients.find(function(p) { return p.email === email; }) || { name: name, email: email };
+      var profile = getPatientProfile(email);
+      var recs = getPatientRecs(email);
+      var appts = getJSON(APPOINTMENTS_KEY, []).filter(function(a) { return a.patientEmail === email && a.doctorEmail === doctor.email; });
+
+      var hasAllergies = (profile.allergies && profile.allergies.length > 0) || (patient.allergies && patient.allergies.trim().length > 0);
+
+      var html = '<div class="p-5">' +
+        '<div class="flex items-center justify-between mb-4">' +
+          '<h3 class="text-lg font-bold text-gray-800">Perfil del Paciente</h3>' +
+          '<button id="close-modal" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-sm font-bold">&times;</button>' +
+        '</div>' +
+        '<div class="flex items-center gap-3 mb-4">' +
+          '<div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xl">' + (patient.name||'P')[0].toUpperCase() + '</div>' +
+          '<div>' +
+            '<p class="font-bold text-gray-800">' + escHtml(patient.name || name || 'Paciente') + '</p>' +
+            '<p class="text-xs text-gray-400">' + escHtml(patient.email || email) + '</p>' +
+            (patient.phone ? '<p class="text-xs text-gray-400">&#x1F4F1; ' + escHtml(patient.phone) + '</p>' : '') +
+          '</div>' +
+        '</div>';
+
+      // ============ SECTION: Medical Conditions (checkboxes) ============
+      var conditions = getConditions();
+      var patientConditions = profile.medicalConditions || [];
+      html += '<div class="mb-3 p-3 rounded-xl bg-amber-50 border border-amber-200">' +
+        '<p class="text-xs font-bold text-amber-600 mb-2">Condiciones M\u00e9dicas</p>' +
+        '<div class="space-y-0.5 max-h-40 overflow-y-auto">';
+      conditions.forEach(function(c) {
+        var checked = patientConditions.indexOf(c) >= 0 ? ' checked' : '';
+        var meta = (profile.conditionsMeta || {})[c];
+        var metaInfo = '';
+        if (meta) {
+          metaInfo = ' <span class="text-[9px] text-gray-400 ml-1">(por ' + (meta.setBy === 'doctor' ? 'Dr.' : 'paciente') + ')</span>';
+        }
+        html += '<label class="chk-label text-xs text-amber-800"><input type="checkbox" class="cond-chk" value="' + escHtml(c) + '"' + checked + '> ' + escHtml(c) + metaInfo + '</label>';
+      });
+      html += '</div>';
+      if (patient.conditions) {
+        html += '<p class="text-[10px] text-amber-500 mt-1 italic">Nota previa del paciente: ' + escHtml(patient.conditions) + '</p>';
+      }
+      html += '</div>';
+
+      // ============ SECTION: Allergies (checkboxes) ============
+      var allergiesList = getAllergies();
+      var patientAllergies = profile.allergies || [];
+      html += '<div class="mb-3 p-3 rounded-xl ' + (hasAllergies ? 'bg-red-50 border-2 border-red-300' : 'bg-gray-50 border border-gray-200') + '">' +
+        '<p class="text-xs font-bold ' + (hasAllergies ? 'text-red-600' : 'text-gray-500') + ' mb-2">&#x1F6A8; ALERGIAS</p>' +
+        '<div class="space-y-0.5 max-h-40 overflow-y-auto">';
+      allergiesList.forEach(function(a) {
+        var checked = patientAllergies.indexOf(a) >= 0 ? ' checked' : '';
+        var meta = (profile.allergiesMeta || {})[a];
+        var metaInfo = '';
+        if (meta) {
+          metaInfo = ' <span class="text-[9px] text-gray-400 ml-1">(por ' + (meta.setBy === 'doctor' ? 'Dr.' : 'paciente') + ')</span>';
+        }
+        html += '<label class="chk-label text-xs ' + (hasAllergies ? 'text-red-800' : 'text-gray-700') + '"><input type="checkbox" class="allergy-chk" value="' + escHtml(a) + '"' + checked + '> ' + escHtml(a) + metaInfo + '</label>';
+      });
+      html += '</div>';
+      if (patient.allergies && patient.allergies.trim()) {
+        html += '<p class="text-[10px] text-red-400 mt-1 italic">Nota previa del paciente: ' + escHtml(patient.allergies) + '</p>';
+      }
+      html += '</div>';
+
+      // ============ SECTION: Food Recommendations/Restrictions ============
+      var foodRules = getFoodRules();
+      var foodRecs = recs.filter(function(r) { return r.type === 'Restricci\u00f3n alimenticia' || r.type === 'Recomendaci\u00f3n alimenticia'; });
+      html += '<div class="mb-3 p-3 rounded-xl bg-blue-50 border border-blue-200">' +
+        '<p class="text-xs font-bold text-blue-600 mb-2">Recomendaciones / Restricciones Alimenticias</p>';
+
+      // Pre-loaded food rules based on patient conditions
+      html += '<div class="mb-2">';
+      var hasPreloaded = false;
+      patientConditions.forEach(function(cond) {
+        if (foodRules[cond] && foodRules[cond].length > 0) {
+          hasPreloaded = true;
+          html += '<p class="text-[10px] font-bold text-blue-500 mt-1">Por ' + escHtml(cond) + ':</p>';
+          foodRules[cond].forEach(function(rule) {
+            var alreadyAdded = recs.some(function(r) { return r.description === rule && (r.type === 'Restricci\u00f3n alimenticia' || r.type === 'Recomendaci\u00f3n alimenticia'); });
+            html += '<label class="chk-label text-[11px] text-blue-700"><input type="checkbox" class="food-rule-chk" data-condition="' + escHtml(cond) + '" value="' + escHtml(rule) + '"' + (alreadyAdded ? ' checked' : '') + '> ' + escHtml(rule) + '</label>';
+          });
+        }
+      });
+      if (!hasPreloaded) {
+        html += '<p class="text-[10px] text-blue-400 italic">Marca condiciones m\u00e9dicas arriba para ver recomendaciones predeterminadas.</p>';
+      }
+      html += '</div>';
+
+      // Existing custom food recs
+      if (foodRecs.length > 0) {
+        html += '<div class="border-t border-blue-200 pt-2 mt-2"><p class="text-[10px] font-bold text-blue-500 mb-1">Personalizadas:</p>';
+        foodRecs.forEach(function(r, ri) {
+          var globalIdx = recs.indexOf(r);
+          html += '<div class="flex items-center justify-between py-0.5">' +
+            '<span class="text-[11px] text-blue-700">' + escHtml(r.description) + '</span>' +
+            '<button class="food-rec-del text-[9px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-400 hover:bg-red-100 font-bold" data-idx="' + globalIdx + '">&times;</button>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      // Add custom food rec
+      html += '<div class="flex gap-2 mt-2">' +
+        '<input type="text" id="custom-food-rec" placeholder="Agregar recomendaci\u00f3n personalizada..." class="flex-1 px-3 py-1.5 bg-white rounded-lg border border-blue-200 text-[11px]">' +
+        '<button id="add-custom-food" class="px-3 py-1.5 rounded-lg bg-blue-500 text-white text-[11px] font-bold">+</button>' +
+      '</div>';
+      if (patient.dietRestrictions) {
+        html += '<p class="text-[10px] text-blue-400 mt-1 italic">Nota previa: ' + escHtml(patient.dietRestrictions) + '</p>';
+      }
+      html += '</div>';
+
+      // ============ SECTION: Exercise Restrictions ============
+      var exerciseRules = getExerciseRules();
+      var exerciseRecs = recs.filter(function(r) { return r.type === 'Restricci\u00f3n de ejercicio'; });
+      html += '<div class="mb-3 p-3 rounded-xl bg-purple-50 border border-purple-200">' +
+        '<p class="text-xs font-bold text-purple-600 mb-2">Restricciones de Ejercicio</p>';
+
+      html += '<div class="mb-2">';
+      var hasExPreloaded = false;
+      patientConditions.forEach(function(cond) {
+        if (exerciseRules[cond] && exerciseRules[cond].length > 0) {
+          hasExPreloaded = true;
+          html += '<p class="text-[10px] font-bold text-purple-500 mt-1">Por ' + escHtml(cond) + ':</p>';
+          exerciseRules[cond].forEach(function(rule) {
+            var alreadyAdded = recs.some(function(r) { return r.description === rule && r.type === 'Restricci\u00f3n de ejercicio'; });
+            html += '<label class="chk-label text-[11px] text-purple-700"><input type="checkbox" class="exercise-rule-chk" data-condition="' + escHtml(cond) + '" value="' + escHtml(rule) + '"' + (alreadyAdded ? ' checked' : '') + '> ' + escHtml(rule) + '</label>';
+          });
+        }
+      });
+      if (!hasExPreloaded) {
+        html += '<p class="text-[10px] text-purple-400 italic">Marca condiciones m\u00e9dicas arriba para ver restricciones predeterminadas.</p>';
+      }
+      html += '</div>';
+
+      if (exerciseRecs.length > 0) {
+        html += '<div class="border-t border-purple-200 pt-2 mt-2"><p class="text-[10px] font-bold text-purple-500 mb-1">Personalizadas:</p>';
+        exerciseRecs.forEach(function(r) {
+          var globalIdx = recs.indexOf(r);
+          html += '<div class="flex items-center justify-between py-0.5">' +
+            '<span class="text-[11px] text-purple-700">' + escHtml(r.description) + '</span>' +
+            '<button class="exercise-rec-del text-[9px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-400 hover:bg-red-100 font-bold" data-idx="' + globalIdx + '">&times;</button>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+
+      html += '<div class="flex gap-2 mt-2">' +
+        '<input type="text" id="custom-exercise-rec" placeholder="Agregar restricci\u00f3n personalizada..." class="flex-1 px-3 py-1.5 bg-white rounded-lg border border-purple-200 text-[11px]">' +
+        '<button id="add-custom-exercise" class="px-3 py-1.5 rounded-lg bg-purple-500 text-white text-[11px] font-bold">+</button>' +
+      '</div>';
+      if (patient.exerciseRestrictions) {
+        html += '<p class="text-[10px] text-purple-400 mt-1 italic">Nota previa: ' + escHtml(patient.exerciseRestrictions) + '</p>';
+      }
+      html += '</div>';
+
+      // ============ SECTION: Habits ============
+      html += '<div class="mb-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200">' +
+        '<p class="text-xs font-bold text-emerald-600 mb-1">H\u00e1bitos Asignados</p>' +
+        '<p class="text-sm text-emerald-700">' + escHtml(patient.habits || 'Ninguno registrado') + '</p>' +
+      '</div>';
+
+      // ============ SECTION: Consultation history ============
+      html += '<div class="mb-4 p-3 rounded-xl bg-gray-50 border border-gray-200">' +
+        '<p class="text-xs font-bold text-gray-600 mb-2">Historial de Consultas (' + appts.length + ')</p>';
+      if (appts.length > 0) {
+        appts.forEach(function(a) {
+          html += '<div class="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">' +
+            '<span class="text-[11px] text-gray-600">' + escHtml(a.date) + ' ' + escHtml(a.time) + '</span>' +
+            '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">' + escHtml(a.status || 'pending') + '</span>' +
+          '</div>';
+        });
+      } else {
+        html += '<p class="text-xs text-gray-400">Sin consultas previas</p>';
+      }
+      html += '</div>';
+
+      // ============ SECTION: General Recommendations (original form) ============
+      var otherRecs = recs.filter(function(r) { return r.type !== 'Restricci\u00f3n alimenticia' && r.type !== 'Recomendaci\u00f3n alimenticia' && r.type !== 'Restricci\u00f3n de ejercicio'; });
+      html += '<div class="mb-3 p-3 rounded-xl bg-indigo-50 border border-indigo-200">' +
+        '<p class="text-xs font-bold text-indigo-600 mb-2">Otras Recomendaciones del Doctor (' + otherRecs.length + ')</p>';
+      if (otherRecs.length > 0) {
+        otherRecs.forEach(function(r) {
+          var globalIdx = recs.indexOf(r);
+          var prioColor = r.priority === 'Alta' ? 'bg-red-100 text-red-600' : r.priority === 'Media' ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600';
+          html += '<div class="p-2 mb-2 rounded-lg bg-white border border-indigo-100">' +
+            '<div class="flex items-center justify-between mb-1">' +
+              '<span class="text-[11px] font-bold text-indigo-700">' + escHtml(r.type) + '</span>' +
+              '<div class="flex gap-1"><span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold ' + prioColor + '">' + escHtml(r.priority) + '</span>' +
+              '<button class="other-rec-del text-[9px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-400 hover:bg-red-100 font-bold" data-idx="' + globalIdx + '">&times;</button></div>' +
+            '</div>' +
+            '<p class="text-xs text-gray-600">' + escHtml(r.description) + '</p>' +
+            '<p class="text-[10px] text-gray-400 mt-1">Vigencia: ' + escHtml(r.validity) + (r.endDate ? ' (hasta ' + escHtml(r.endDate) + ')' : '') + '</p>' +
+          '</div>';
+        });
+      } else {
+        html += '<p class="text-xs text-gray-400">Sin recomendaciones a\u00fan</p>';
+      }
+      html += '</div>';
+
+      // Add general recommendation form
+      html += '<div class="border-t border-gray-200 pt-4 mt-4">' +
+        '<h4 class="font-bold text-gray-800 text-sm mb-3">Agregar Recomendaci\u00f3n General</h4>' +
+        '<div class="space-y-3">' +
+          '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Tipo</label>' +
+          '<select id="rec-type" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+            '<option>H\u00e1bito a seguir</option><option>Condici\u00f3n m\u00e9dica</option><option>Otro</option>' +
+          '</select></div>' +
+          '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Descripci\u00f3n</label>' +
+          '<textarea id="rec-desc" rows="2" placeholder="Detalle de la recomendaci\u00f3n..." class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm resize-none"></textarea></div>' +
+          '<div class="grid grid-cols-2 gap-3">' +
+            '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Prioridad</label>' +
+            '<select id="rec-priority" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '<option>Alta</option><option>Media</option><option selected>Baja</option>' +
+            '</select></div>' +
+            '<div><label class="block text-xs font-semibold text-gray-600 mb-1">Vigencia</label>' +
+            '<select id="rec-validity" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+              '<option>Permanente</option><option>Temporal</option>' +
+            '</select></div>' +
+          '</div>' +
+          '<div id="rec-enddate-wrap" class="hidden">' +
+            '<label class="block text-xs font-semibold text-gray-600 mb-1">Fecha fin</label>' +
+            '<input type="date" id="rec-enddate" class="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-sm">' +
+          '</div>' +
+          '<button id="rec-save" class="w-full py-2.5 rounded-xl gradient-primary text-white font-bold text-sm">Guardar Recomendaci\u00f3n</button>' +
+        '</div>' +
+      '</div>';
+
+      // ============ SECTION: Audit Log ============
+      var allLogs = getJSON(AUDIT_LOG_KEY, []);
+      var patientLogs = allLogs.filter(function(l) { return l.patientEmail === email; });
+      patientLogs.sort(function(a, b) { return b.timestamp < a.timestamp ? -1 : 1; });
+      html += '<div class="border-t border-gray-200 pt-4 mt-4">' +
+        '<h4 class="font-bold text-gray-800 text-sm mb-3">Registro de Actividad (' + patientLogs.length + ')</h4>';
+      if (patientLogs.length > 0) {
+        html += '<div class="max-h-48 overflow-y-auto space-y-1">';
+        patientLogs.slice(0, 50).forEach(function(log) {
+          var actionLabel = {
+            'condition_added': 'Condici\u00f3n agregada',
+            'condition_removed': 'Condici\u00f3n removida',
+            'allergy_added': 'Alergia agregada',
+            'allergy_removed': 'Alergia removida',
+            'recommendation_added': 'Recomendaci\u00f3n agregada',
+            'recommendation_removed': 'Recomendaci\u00f3n removida'
+          }[log.action] || log.action;
+          var actionColor = log.action.indexOf('added') >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50';
+          var ts = new Date(log.timestamp);
+          var timeStr = ts.toLocaleDateString('es') + ' ' + ts.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+          html += '<div class="flex items-start gap-2 p-2 rounded-lg bg-gray-50">' +
+            '<span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ' + actionColor + '">' + actionLabel + '</span>' +
+            '<div class="flex-1 min-w-0">' +
+              '<p class="text-[11px] text-gray-600 truncate">' + escHtml(log.detail) + '</p>' +
+              '<p class="text-[9px] text-gray-400">' + escHtml(log.doctorEmail) + ' - ' + timeStr + '</p>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<p class="text-xs text-gray-400">Sin actividad registrada</p>';
+      }
+      html += '</div>';
+
+      html += '</div>'; // close main p-5 div
+
+      content.innerHTML = html;
+      modal.classList.remove('hidden');
+
+      // ==================== BIND MODAL EVENTS ====================
+      document.getElementById('close-modal').onclick = function() { modal.classList.add('hidden'); };
+      modal.onclick = function(e) { if (e.target === modal) modal.classList.add('hidden'); };
+
+      // ---- Conditions checkboxes ----
+      content.querySelectorAll('.cond-chk').forEach(function(chk) {
+        chk.onchange = function() {
+          var prof = getPatientProfile(email);
+          var cond = chk.value;
+          if (!prof.medicalConditions) prof.medicalConditions = [];
+          if (!prof.conditionsMeta) prof.conditionsMeta = {};
+
+          if (chk.checked) {
+            if (prof.medicalConditions.indexOf(cond) < 0) prof.medicalConditions.push(cond);
+            prof.conditionsMeta[cond] = { setBy: 'doctor', doctorEmail: doctor.email, date: todayStr() };
+            addAuditLog('condition_added', email, cond);
+          } else {
+            prof.medicalConditions = prof.medicalConditions.filter(function(c) { return c !== cond; });
+            delete prof.conditionsMeta[cond];
+            addAuditLog('condition_removed', email, cond);
+          }
+          setPatientProfile(email, prof);
+          // Refresh the modal to update food/exercise rule suggestions
+          openPatientModal(email, name);
+        };
+      });
+
+      // ---- Allergies checkboxes ----
+      content.querySelectorAll('.allergy-chk').forEach(function(chk) {
+        chk.onchange = function() {
+          var prof = getPatientProfile(email);
+          var allergy = chk.value;
+          if (!prof.allergies) prof.allergies = [];
+          if (!prof.allergiesMeta) prof.allergiesMeta = {};
+
+          if (chk.checked) {
+            if (prof.allergies.indexOf(allergy) < 0) prof.allergies.push(allergy);
+            prof.allergiesMeta[allergy] = { setBy: 'doctor', doctorEmail: doctor.email, date: todayStr() };
+            addAuditLog('allergy_added', email, allergy);
+          } else {
+            prof.allergies = prof.allergies.filter(function(a) { return a !== allergy; });
+            delete prof.allergiesMeta[allergy];
+            addAuditLog('allergy_removed', email, allergy);
+          }
+          setPatientProfile(email, prof);
+          openPatientModal(email, name);
+        };
+      });
+
+      // ---- Food rule checkboxes (pre-loaded from config) ----
+      content.querySelectorAll('.food-rule-chk').forEach(function(chk) {
+        chk.onchange = function() {
+          var currentRecs = getPatientRecs(email);
+          var rule = chk.value;
+          if (chk.checked) {
+            currentRecs.push({
+              type: 'Restricci\u00f3n alimenticia',
+              description: rule,
+              priority: 'Media',
+              validity: 'Permanente',
+              endDate: '',
+              condition: chk.dataset.condition,
+              doctorEmail: doctor.email,
+              doctorName: doctor.name,
+              createdAt: new Date().toISOString()
+            });
+            addAuditLog('recommendation_added', email, 'Alimenticia: ' + rule);
+          } else {
+            var idx = -1;
+            for (var i = 0; i < currentRecs.length; i++) {
+              if (currentRecs[i].description === rule && (currentRecs[i].type === 'Restricci\u00f3n alimenticia' || currentRecs[i].type === 'Recomendaci\u00f3n alimenticia')) {
+                idx = i; break;
+              }
+            }
+            if (idx >= 0) currentRecs.splice(idx, 1);
+            addAuditLog('recommendation_removed', email, 'Alimenticia: ' + rule);
+          }
+          setPatientRecs(email, currentRecs);
+          openPatientModal(email, name);
+        };
+      });
+
+      // ---- Exercise rule checkboxes ----
+      content.querySelectorAll('.exercise-rule-chk').forEach(function(chk) {
+        chk.onchange = function() {
+          var currentRecs = getPatientRecs(email);
+          var rule = chk.value;
+          if (chk.checked) {
+            currentRecs.push({
+              type: 'Restricci\u00f3n de ejercicio',
+              description: rule,
+              priority: 'Media',
+              validity: 'Permanente',
+              endDate: '',
+              condition: chk.dataset.condition,
+              doctorEmail: doctor.email,
+              doctorName: doctor.name,
+              createdAt: new Date().toISOString()
+            });
+            addAuditLog('recommendation_added', email, 'Ejercicio: ' + rule);
+          } else {
+            var idx = -1;
+            for (var i = 0; i < currentRecs.length; i++) {
+              if (currentRecs[i].description === rule && currentRecs[i].type === 'Restricci\u00f3n de ejercicio') {
+                idx = i; break;
+              }
+            }
+            if (idx >= 0) currentRecs.splice(idx, 1);
+            addAuditLog('recommendation_removed', email, 'Ejercicio: ' + rule);
+          }
+          setPatientRecs(email, currentRecs);
+          openPatientModal(email, name);
+        };
+      });
+
+      // ---- Custom food recommendation ----
+      var addFoodBtn = document.getElementById('add-custom-food');
+      if (addFoodBtn) addFoodBtn.onclick = function() {
+        var input = document.getElementById('custom-food-rec');
+        var val = input.value.trim();
+        if (!val) return;
+        var currentRecs = getPatientRecs(email);
+        currentRecs.push({
+          type: 'Restricci\u00f3n alimenticia',
+          description: val,
+          priority: 'Media',
+          validity: 'Permanente',
+          endDate: '',
+          condition: 'Personalizada',
+          doctorEmail: doctor.email,
+          doctorName: doctor.name,
+          createdAt: new Date().toISOString()
+        });
+        setPatientRecs(email, currentRecs);
+        addAuditLog('recommendation_added', email, 'Alimenticia personalizada: ' + val);
+        openPatientModal(email, name);
+      };
+
+      // ---- Custom exercise restriction ----
+      var addExBtn = document.getElementById('add-custom-exercise');
+      if (addExBtn) addExBtn.onclick = function() {
+        var input = document.getElementById('custom-exercise-rec');
+        var val = input.value.trim();
+        if (!val) return;
+        var currentRecs = getPatientRecs(email);
+        currentRecs.push({
+          type: 'Restricci\u00f3n de ejercicio',
+          description: val,
+          priority: 'Media',
+          validity: 'Permanente',
+          endDate: '',
+          condition: 'Personalizada',
+          doctorEmail: doctor.email,
+          doctorName: doctor.name,
+          createdAt: new Date().toISOString()
+        });
+        setPatientRecs(email, currentRecs);
+        addAuditLog('recommendation_added', email, 'Ejercicio personalizada: ' + val);
+        openPatientModal(email, name);
+      };
+
+      // ---- Delete food/exercise/other recs ----
+      content.querySelectorAll('.food-rec-del, .exercise-rec-del, .other-rec-del').forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          var currentRecs = getPatientRecs(email);
+          var idx = parseInt(btn.dataset.idx);
+          if (idx >= 0 && idx < currentRecs.length) {
+            var removed = currentRecs[idx];
+            addAuditLog('recommendation_removed', email, removed.type + ': ' + removed.description);
+            currentRecs.splice(idx, 1);
+            setPatientRecs(email, currentRecs);
+          }
+          openPatientModal(email, name);
+        };
+      });
+
+      // ---- General recommendation form ----
+      var recValidity = document.getElementById('rec-validity');
+      if (recValidity) recValidity.onchange = function() {
+        document.getElementById('rec-enddate-wrap').classList.toggle('hidden', this.value !== 'Temporal');
+      };
+
+      var recSave = document.getElementById('rec-save');
+      if (recSave) recSave.onclick = function() {
+        var desc = document.getElementById('rec-desc').value.trim();
+        if (!desc) return;
+        var rec = {
+          type: document.getElementById('rec-type').value,
+          description: desc,
+          priority: document.getElementById('rec-priority').value,
+          validity: document.getElementById('rec-validity').value,
+          endDate: document.getElementById('rec-validity').value === 'Temporal' ? document.getElementById('rec-enddate').value : '',
+          doctorEmail: doctor.email,
+          doctorName: doctor.name,
+          createdAt: new Date().toISOString()
+        };
+        var currentRecs = getPatientRecs(email);
+        currentRecs.push(rec);
+        setPatientRecs(email, currentRecs);
+        addAuditLog('recommendation_added', email, rec.type + ': ' + desc);
+        openPatientModal(email, name);
+      };
+    }
+
+    // ==================== CALENDAR TAB ====================
+    function renderCalendarTab(container) {
+      var slotsKey = 'dya_doctor_slots_' + doctor.email;
+      var slots = getJSON(slotsKey, {});
+
+      var now = new Date();
+      var dayOfWeek = now.getDay();
+      var monday = new Date(now);
+      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+
+      var days = ['Lun','Mar','Mi\u00e9','Jue','Vie','S\u00e1b','Dom'];
+      var hours = [];
+      for (var h = 8; h <= 18; h++) hours.push(h);
+
+      var weekDates = [];
+      for (var d = 0; d < 7; d++) {
+        var dd = new Date(monday);
+        dd.setDate(monday.getDate() + d);
+        weekDates.push(dd.toISOString().split('T')[0]);
+      }
+
+      var html = '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 animate-fade-in">' +
+        '<div class="flex items-center justify-between mb-3">' +
+          '<h4 class="font-bold text-gray-800">Horario Semanal</h4>' +
+          '<div class="flex items-center gap-2">' +
+            '<button id="cal-prev" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 text-sm">&larr;</button>' +
+            '<span class="text-xs text-gray-500 font-semibold">' + weekDates[0] + ' - ' + weekDates[6] + '</span>' +
+            '<button id="cal-next" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 text-sm">&rarr;</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="text-[10px] text-gray-400 mb-2">Haz clic en un slot para marcar/desmarcar disponibilidad</div>' +
+        '<div class="overflow-x-auto">' +
+        '<table class="w-full text-[10px]">' +
+        '<thead><tr><th class="p-1 text-gray-400 font-semibold">Hora</th>';
+
+      days.forEach(function(day, di) {
+        var isToday = weekDates[di] === todayStr();
+        html += '<th class="p-1 font-semibold ' + (isToday ? 'text-indigo-600' : 'text-gray-400') + '">' + day + '<br><span class="font-normal">' + weekDates[di].substr(5) + '</span></th>';
+      });
+      html += '</tr></thead><tbody>';
+
+      hours.forEach(function(hour) {
+        var hStr = (hour < 10 ? '0' : '') + hour + ':00';
+        html += '<tr>';
+        html += '<td class="p-1 text-gray-500 font-semibold whitespace-nowrap">' + hStr + '</td>';
+        weekDates.forEach(function(dateStr) {
+          var slotKey = dateStr + '_' + hStr;
+          var isAvail = slots[slotKey];
+          html += '<td class="p-0.5"><div class="cal-slot rounded h-7 flex items-center justify-center text-[9px] font-bold ' +
+            (isAvail ? 'slot-available' : 'slot-empty') + '" data-slot="' + slotKey + '">' +
+            (isAvail ? '&#x2713;' : '') + '</div></td>';
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div></div>';
+
+      html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in animate-delay-1">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-lg">&#x1F4C5;</div>' +
+          '<div>' +
+            '<h4 class="font-bold text-gray-800">Conectar Google Calendar</h4>' +
+            '<p class="text-xs text-gray-400">Sincroniza tu disponibilidad autom\u00e1ticamente</p>' +
+          '</div>' +
+        '</div>' +
+        '<p class="text-xs text-gray-400 mb-3">Pr\u00f3ximamente podr\u00e1s conectar tu Google Calendar para sincronizar tu agenda autom\u00e1ticamente.</p>' +
+        '<a href="mailto:soporte@midoctorya.com?subject=Conectar Google Calendar&body=Quiero conectar mi Google Calendar. Mi email es: ' + encodeURIComponent(doctor.email) + '" class="block w-full py-3 rounded-xl bg-blue-50 text-blue-600 font-bold text-sm text-center hover:bg-blue-100 transition">Solicitar Conexi\u00f3n (Email)</a>' +
+      '</div>';
+
+      container.innerHTML = html;
+
+      container.querySelectorAll('.cal-slot').forEach(function(el) {
+        el.onclick = function() {
+          var slotKey = el.dataset.slot;
+          var currentSlots = getJSON(slotsKey, {});
+          if (currentSlots[slotKey]) {
+            delete currentSlots[slotKey];
+          } else {
+            currentSlots[slotKey] = true;
+          }
+          setJSON(slotsKey, currentSlots);
+          renderCalendarTab(container);
+        };
+      });
+    }
+
+    // ==================== SERVICES TAB ====================
+    function renderServicesTab(container) {
+      var services = [
+        { name: 'Acompa\u00f1amiento Fitness', icon: '&#x2705;', active: true, desc: 'Seguimiento personalizado de rutinas de ejercicio, progreso f\u00edsico y h\u00e1bitos saludables.' },
+        { name: 'Nutrici\u00f3n', icon: '&#x1F512;', active: false, desc: 'Planes alimenticios personalizados y seguimiento nutricional.' },
+        { name: 'Psicolog\u00eda', icon: '&#x1F512;', active: false, desc: 'Acompa\u00f1amiento emocional y manejo del estr\u00e9s.' },
+        { name: 'Medicina General', icon: '&#x1F512;', active: false, desc: 'Consultas m\u00e9dicas generales y seguimiento de condiciones.' }
+      ];
+
+      var html = '<div class="space-y-3">';
+      services.forEach(function(s, i) {
+        var borderClass = s.active ? 'border-emerald-200 bg-emerald-50/30' : 'border-gray-200 bg-gray-50/50';
+        var opacity = s.active ? '' : 'opacity-60';
+        html += '<div class="bg-white rounded-xl shadow-sm border ' + borderClass + ' p-4 animate-fade-in ' + opacity + '" style="animation-delay:' + (i*80) + 'ms">' +
+          '<div class="flex items-center gap-3">' +
+            '<span class="text-2xl">' + s.icon + '</span>' +
+            '<div class="flex-1">' +
+              '<div class="flex items-center gap-2">' +
+                '<p class="text-sm font-bold text-gray-800">' + s.name + '</p>' +
+                (s.active
+                  ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold">Activo</span>'
+                  : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 font-bold">Pr\u00f3ximamente</span>') +
+              '</div>' +
+              '<p class="text-xs text-gray-400 mt-1">' + s.desc + '</p>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+
+      html += '<div class="mt-4 p-4 rounded-xl bg-indigo-50 border border-indigo-200 animate-fade-in animate-delay-3">' +
+        '<p class="text-xs text-indigo-600"><strong>Nota:</strong> Actualmente solo el servicio de Acompa\u00f1amiento Fitness est\u00e1 habilitado. Los dem\u00e1s servicios se activar\u00e1n en futuras actualizaciones.</p>' +
+      '</div>';
+
+      container.innerHTML = html;
+    }
+
+    // ==================== MONITORING TAB ====================
+    var MONITORING_MODES = [
+      { id: 'rest', label: 'Reposo', icon: '&#x1F6CF;', gradient: 'from-blue-400 to-blue-600' },
+      { id: 'walk', label: 'Caminata', icon: '&#x1F6B6;', gradient: 'from-green-400 to-green-600' },
+      { id: 'run', label: 'Carrera', icon: '&#x1F3C3;', gradient: 'from-orange-400 to-orange-600' },
+      { id: 'hiit', label: 'HIIT', icon: '&#x26A1;', gradient: 'from-red-400 to-red-600' },
+      { id: 'strength', label: 'Fuerza', icon: '&#x1F4AA;', gradient: 'from-purple-400 to-purple-600' },
+      { id: 'cycling', label: 'Ciclismo', icon: '&#x1F6B4;', gradient: 'from-yellow-400 to-yellow-600' },
+      { id: 'swimming', label: 'Natacion', icon: '&#x1F3CA;', gradient: 'from-cyan-400 to-cyan-600' },
+      { id: 'pre_surgery', label: 'Pre-Cirugia', icon: '&#x1F3E5;', gradient: 'from-pink-400 to-pink-600' },
+      { id: 'post_surgery', label: 'Post-Cirugia', icon: '&#x1FA7A;', gradient: 'from-rose-400 to-rose-600' },
+      { id: 'rehab', label: 'Rehabilitacion', icon: '&#x2764;&#xFE0F;&#x200D;&#x1FA79;', gradient: 'from-teal-400 to-teal-600' },
+      { id: 'continuous_24h', label: 'Continuo 24h', icon: '&#x23F0;', gradient: 'from-indigo-400 to-indigo-600' }
+    ];
+
+    function getModeInfo(modeId) {
+      var m = MONITORING_MODES.find(function(x) { return x.id === modeId; });
+      return m || { id: modeId, label: modeId, icon: '&#x2764;', gradient: 'from-gray-400 to-gray-600' };
+    }
+
+    function getMonitoredPatients() {
+      var patients = getJSON(USERS_KEY, []);
+      var monitored = [];
+      patients.forEach(function(p) {
+        var key = 'dya_monitoring_prescription_' + p.email;
+        var prescription = getJSON(key, null);
+        if (prescription && prescription.active) {
+          monitored.push({ patient: p, prescription: prescription });
+        }
+      });
+      return monitored;
+    }
+
+    function timeAgo(isoStr) {
+      if (!isoStr) return 'N/A';
+      var diff = Date.now() - new Date(isoStr).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Ahora';
+      if (mins < 60) return mins + 'm';
+      var hrs = Math.floor(mins / 60);
+      if (hrs < 24) return hrs + 'h';
+      return Math.floor(hrs / 24) + 'd';
+    }
+
+    function renderMonitoringTab(container) {
+      var monitored = getMonitoredPatients();
+
+      var html = '';
+
+      // ===== Section: Alert Timeline =====
+      html += '<div class="mb-6">' +
+        '<h2 class="text-sm font-bold text-gray-800 mb-3">&#x1F6A8; Alertas Recientes</h2>';
+      var allAlerts = [];
+      monitored.forEach(function(m) {
+        var alerts = getJSON('dya_wearable_alerts_' + m.patient.email, []);
+        alerts.forEach(function(a) {
+          allAlerts.push({ patientName: m.patient.name || m.patient.email, patientEmail: m.patient.email, alert: a });
+        });
+      });
+      allAlerts.sort(function(a, b) { return (b.alert.timestamp || '').localeCompare(a.alert.timestamp || ''); });
+      allAlerts = allAlerts.slice(0, 20);
+
+      if (allAlerts.length === 0) {
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-center text-gray-400 text-xs">Sin alertas recientes</div>';
+      } else {
+        html += '<div class="space-y-2">';
+        allAlerts.forEach(function(item, i) {
+          var a = item.alert;
+          var levelColor = a.level === 'critical' ? 'bg-red-100 border-red-300 text-red-700' :
+                           a.level === 'warning' ? 'bg-orange-100 border-orange-300 text-orange-700' :
+                           'bg-yellow-100 border-yellow-300 text-yellow-700';
+          var dotColor = a.level === 'critical' ? 'bg-red-500' : a.level === 'warning' ? 'bg-orange-500' : 'bg-yellow-500';
+          html += '<div class="flex items-start gap-3 animate-fade-in" style="animation-delay:' + (i * 50) + 'ms">' +
+            '<div class="flex flex-col items-center mt-1"><div class="w-2.5 h-2.5 rounded-full ' + dotColor + '"></div>' +
+            (i < allAlerts.length - 1 ? '<div class="w-0.5 h-8 bg-gray-200 mt-1"></div>' : '') + '</div>' +
+            '<div class="flex-1 ' + levelColor + ' border rounded-xl px-3 py-2 text-xs">' +
+              '<div class="flex justify-between items-center">' +
+                '<span class="font-bold">' + escHtml(item.patientName) + '</span>' +
+                '<span class="text-[10px] opacity-70">' + (a.timestamp ? timeAgo(a.timestamp) : '') + '</span>' +
+              '</div>' +
+              '<p class="mt-0.5">' + escHtml(a.type || 'Alerta') + (a.value !== undefined ? ' - Valor: ' + escHtml(String(a.value)) : '') + '</p>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // ===== Section: Monitored Patients =====
+      html += '<div class="mb-6">' +
+        '<h2 class="text-sm font-bold text-gray-800 mb-3">&#x1F4CB; Pacientes Monitoreados (' + monitored.length + ')</h2>';
+      if (monitored.length === 0) {
+        html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 text-center text-gray-400 text-xs">No hay pacientes con monitoreo activo</div>';
+      } else {
+        html += '<div class="space-y-3">';
+        monitored.forEach(function(m, i) {
+          var p = m.patient;
+          var rx = m.prescription;
+          var mode = getModeInfo(rx.mode);
+          var buffers = getJSON('dya_wearable_buffers_' + p.email, null);
+          var lastHr = buffers && buffers.hr && buffers.hr.length > 0 ? buffers.hr[buffers.hr.length - 1] : null;
+          var lastUpdate = buffers && buffers.lastUpdate ? buffers.lastUpdate : rx.activatedAt;
+          var isConnected = buffers && buffers.lastUpdate && (Date.now() - new Date(buffers.lastUpdate).getTime() < 300000);
+          var connectionDot = isConnected ? 'bg-emerald-500' : 'bg-red-400';
+          var connectionText = isConnected ? 'Conectado' : 'Desconectado';
+
+          html += '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in" style="animation-delay:' + (i * 80) + 'ms">' +
+            '<div class="flex items-center justify-between mb-3">' +
+              '<div class="flex items-center gap-3">' +
+                '<div class="w-10 h-10 rounded-xl bg-gradient-to-br ' + mode.gradient + ' flex items-center justify-center text-white text-lg">' + mode.icon + '</div>' +
+                '<div>' +
+                  '<p class="text-sm font-bold text-gray-800">' + escHtml(p.name || p.email) + '</p>' +
+                  '<p class="text-[10px] text-gray-400">' + escHtml(p.email) + '</p>' +
+                '</div>' +
+              '</div>' +
+              '<div class="flex items-center gap-1.5">' +
+                '<div class="w-2 h-2 rounded-full ' + connectionDot + '"></div>' +
+                '<span class="text-[10px] text-gray-400">' + connectionText + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex items-center gap-2 mb-3 flex-wrap">' +
+              '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r ' + mode.gradient + ' text-white font-bold">' + escHtml(mode.label) + '</span>' +
+              '<span class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-semibold">Nivel: ' + escHtml(rx.alertLevel || 'medio') + '</span>' +
+              (lastHr !== null ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-bold">HR: ' + lastHr + ' bpm</span>' : '') +
+              '<span class="text-[10px] text-gray-300">Act. ' + timeAgo(lastUpdate) + '</span>' +
+            '</div>' +
+            '<div class="flex gap-2">' +
+              '<button class="monitoring-detail-btn flex-1 py-2 rounded-xl bg-indigo-50 text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition" data-email="' + escHtml(p.email) + '" data-name="' + escHtml(p.name || '') + '">Ver Detalle</button>' +
+              '<button class="monitoring-stop-btn px-3 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition" data-email="' + escHtml(p.email) + '">Detener</button>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // ===== Section: Activate Monitoring Form =====
+      html += '<div class="mb-6">' +
+        '<h2 class="text-sm font-bold text-gray-800 mb-3">&#x2795; Activar Monitoreo</h2>' +
+        '<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">';
+
+      // Patient selector
+      var allPatients = getJSON(USERS_KEY, []);
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-1">Paciente</label>' +
+        '<select id="mon-patient" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700">' +
+        '<option value="">-- Seleccionar paciente --</option>';
+      allPatients.forEach(function(p) {
+        html += '<option value="' + escHtml(p.email) + '">' + escHtml(p.name || p.email) + ' (' + escHtml(p.email) + ')</option>';
+      });
+      html += '</select></div>';
+
+      // Mode selector
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-1">Modo de Monitoreo</label>' +
+        '<select id="mon-mode" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700">';
+      MONITORING_MODES.forEach(function(m) {
+        html += '<option value="' + m.id + '">' + m.label + '</option>';
+      });
+      html += '</select></div>';
+
+      // Alert level
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-1">Nivel de Alerta</label>' +
+        '<select id="mon-alert-level" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700">' +
+          '<option value="bajo">Bajo</option>' +
+          '<option value="medio" selected>Medio</option>' +
+          '<option value="alto">Alto</option>' +
+        '</select></div>';
+
+      // Custom thresholds
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-2">Umbrales Personalizados (opcional)</label>' +
+        '<div class="grid grid-cols-3 gap-2">' +
+          '<div><label class="text-[10px] text-gray-400">HR Max</label><input type="number" id="mon-hr-max" placeholder="180" class="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700"></div>' +
+          '<div><label class="text-[10px] text-gray-400">HR Min</label><input type="number" id="mon-hr-min" placeholder="40" class="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700"></div>' +
+          '<div><label class="text-[10px] text-gray-400">SpO2 Min</label><input type="number" id="mon-spo2-min" placeholder="90" class="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700"></div>' +
+        '</div></div>';
+
+      // Clinical notes
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-1">Notas Clinicas</label>' +
+        '<textarea id="mon-notes" rows="3" placeholder="Observaciones del doctor..." class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700 resize-none"></textarea>' +
+      '</div>';
+
+      // Duration
+      html += '<div class="mb-4">' +
+        '<label class="block text-xs font-semibold text-gray-600 mb-1">Duracion</label>' +
+        '<select id="mon-duration" class="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 text-sm text-gray-700">' +
+          '<option value="24h">24 horas</option>' +
+          '<option value="48h">48 horas</option>' +
+          '<option value="7d" selected>7 dias</option>' +
+          '<option value="30d">30 dias</option>' +
+          '<option value="indefinite">Indefinido</option>' +
+        '</select></div>';
+
+      // Activate button
+      html += '<button id="mon-activate-btn" class="w-full py-3 rounded-xl gradient-primary text-white font-bold text-sm shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition-transform">Activar Monitoreo</button>';
+
+      html += '</div></div>';
+
+      container.innerHTML = html;
+
+      // ===== Event: Activate Monitoring =====
+      var activateBtn = document.getElementById('mon-activate-btn');
+      if (activateBtn) {
+        activateBtn.onclick = function() {
+          var selectedEmail = document.getElementById('mon-patient').value;
+          var selectedMode = document.getElementById('mon-mode').value;
+          var alertLevel = document.getElementById('mon-alert-level').value;
+          var hrMax = document.getElementById('mon-hr-max').value;
+          var hrMin = document.getElementById('mon-hr-min').value;
+          var spo2Min = document.getElementById('mon-spo2-min').value;
+          var clinicalNotes = document.getElementById('mon-notes').value;
+          var duration = document.getElementById('mon-duration').value;
+
+          if (!selectedEmail) {
+            alert('Selecciona un paciente');
+            return;
+          }
+
+          var now = new Date();
+          var expiresAt = null;
+          if (duration === '24h') expiresAt = new Date(now.getTime() + 24 * 3600000).toISOString();
+          else if (duration === '48h') expiresAt = new Date(now.getTime() + 48 * 3600000).toISOString();
+          else if (duration === '7d') expiresAt = new Date(now.getTime() + 7 * 24 * 3600000).toISOString();
+          else if (duration === '30d') expiresAt = new Date(now.getTime() + 30 * 24 * 3600000).toISOString();
+
+          var prescription = {
+            doctorName: doctor.name,
+            doctorEmail: doctor.email,
+            patientEmail: selectedEmail,
+            mode: selectedMode,
+            alertLevel: alertLevel,
+            customThresholds: {
+              hrMax: hrMax ? parseInt(hrMax) : null,
+              hrMin: hrMin ? parseInt(hrMin) : null,
+              spo2Min: spo2Min ? parseInt(spo2Min) : null
+            },
+            notes: clinicalNotes,
+            activatedAt: now.toISOString(),
+            expiresAt: expiresAt,
+            active: true
+          };
+
+          localStorage.setItem('dya_monitoring_prescription_' + selectedEmail, JSON.stringify(prescription));
+          addAuditLog('monitoring_activated', selectedEmail, 'Modo: ' + selectedMode + ', Nivel: ' + alertLevel + ', Duracion: ' + duration);
+          renderMonitoringTab(container);
+        };
+      }
+
+      // ===== Event: View Detail =====
+      var detailBtns = container.querySelectorAll('.monitoring-detail-btn');
+      detailBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          openMonitoringDetail(btn.dataset.email, btn.dataset.name);
+        };
+      });
+
+      // ===== Event: Stop Monitoring =====
+      var stopBtns = container.querySelectorAll('.monitoring-stop-btn');
+      stopBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          showConfirm('Detener monitoreo para este paciente?', function() {
+            var key = 'dya_monitoring_prescription_' + btn.dataset.email;
+            var rx = getJSON(key, null);
+            if (rx) {
+              rx.active = false;
+              rx.stoppedAt = new Date().toISOString();
+              localStorage.setItem(key, JSON.stringify(rx));
+              addAuditLog('monitoring_stopped', btn.dataset.email, 'Modo: ' + rx.mode);
+            }
+            renderMonitoringTab(container);
+          });
+        };
+      });
+    }
+
+    // ==================== MONITORING DETAIL MODAL ====================
+    function openMonitoringDetail(email, name) {
+      var modal = document.getElementById('patient-modal');
+      var content = document.getElementById('patient-modal-content');
+      var rx = getJSON('dya_monitoring_prescription_' + email, null);
+      if (!rx) return;
+
+      var mode = getModeInfo(rx.mode);
+      var buffers = getJSON('dya_wearable_buffers_' + email, null);
+      var alerts = getJSON('dya_wearable_alerts_' + email, []);
+      var baseline = getJSON('dya_surgery_baseline_' + email, null);
+
+      var lastHr = buffers && buffers.hr && buffers.hr.length > 0 ? buffers.hr[buffers.hr.length - 1] : null;
+      var hrHistory = buffers && buffers.hr ? buffers.hr.slice(-60) : [];
+      var hrv = buffers && buffers.hrv ? buffers.hrv : null;
+
+      var html = '<div class="p-5">';
+
+      // Header
+      html += '<div class="flex items-center justify-between mb-4">' +
+        '<h3 class="text-lg font-bold text-gray-800">Monitoreo Cardiaco</h3>' +
+        '<button id="close-mon-modal" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-sm font-bold">&times;</button>' +
+      '</div>';
+
+      // Patient info + mode badge
+      html += '<div class="flex items-center gap-3 mb-4">' +
+        '<div class="w-12 h-12 rounded-xl bg-gradient-to-br ' + mode.gradient + ' flex items-center justify-center text-white text-xl">' + mode.icon + '</div>' +
+        '<div>' +
+          '<p class="font-bold text-gray-800">' + escHtml(name || email) + '</p>' +
+          '<p class="text-xs text-gray-400">' + escHtml(email) + '</p>' +
+        '</div>' +
+        '<span class="ml-auto text-[10px] px-3 py-1 rounded-full bg-gradient-to-r ' + mode.gradient + ' text-white font-bold">' + escHtml(mode.label) + '</span>' +
+      '</div>';
+
+      // Current HR
+      html += '<div class="grid grid-cols-2 gap-3 mb-4">' +
+        '<div class="bg-red-50 rounded-xl p-4 text-center border border-red-100">' +
+          '<p class="text-3xl font-black text-red-500">' + (lastHr !== null ? lastHr : '--') + '</p>' +
+          '<p class="text-[10px] text-red-400 font-semibold uppercase mt-1">BPM Actual</p>' +
+        '</div>' +
+        '<div class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">' +
+          '<p class="text-3xl font-black text-indigo-500">' + (hrv && hrv.sdnn ? hrv.sdnn : '--') + '</p>' +
+          '<p class="text-[10px] text-indigo-400 font-semibold uppercase mt-1">SDNN (HRV)</p>' +
+        '</div>' +
+      '</div>';
+
+      // HRV extra
+      if (hrv) {
+        html += '<div class="grid grid-cols-3 gap-2 mb-4">' +
+          '<div class="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">' +
+            '<p class="text-sm font-bold text-gray-700">' + (hrv.rmssd || '--') + '</p>' +
+            '<p class="text-[9px] text-gray-400">RMSSD</p>' +
+          '</div>' +
+          '<div class="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">' +
+            '<p class="text-sm font-bold text-gray-700">' + (hrv.pnn50 !== undefined ? hrv.pnn50 + '%' : '--') + '</p>' +
+            '<p class="text-[9px] text-gray-400">pNN50</p>' +
+          '</div>' +
+          '<div class="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">' +
+            '<p class="text-sm font-bold text-gray-700">' + (hrv.lf_hf !== undefined ? hrv.lf_hf : '--') + '</p>' +
+            '<p class="text-[9px] text-gray-400">LF/HF</p>' +
+          '</div>' +
+        '</div>';
+      }
+
+      // HR History Chart (CSS bar chart)
+      if (hrHistory.length > 0) {
+        var maxHr = Math.max.apply(null, hrHistory);
+        var minHr = Math.min.apply(null, hrHistory);
+        var range = maxHr - minHr || 1;
+        html += '<div class="mb-4">' +
+          '<p class="text-xs font-bold text-gray-600 mb-2">Historial HR (ultimas lecturas)</p>' +
+          '<div class="bg-gray-50 rounded-xl p-3 border border-gray-100">' +
+            '<div class="flex items-end gap-px" style="height:80px">';
+        hrHistory.forEach(function(hr) {
+          var pct = Math.max(10, ((hr - minHr) / range) * 100);
+          var color = hr > 150 ? '#EF4444' : hr > 120 ? '#F59E0B' : hr > 90 ? '#6366F1' : '#10B981';
+          html += '<div style="flex:1;height:' + pct + '%;background:' + color + ';border-radius:2px 2px 0 0;min-width:2px" title="' + hr + ' bpm"></div>';
+        });
+        html += '</div>' +
+            '<div class="flex justify-between mt-1">' +
+              '<span class="text-[9px] text-gray-400">Min: ' + minHr + '</span>' +
+              '<span class="text-[9px] text-gray-400">Max: ' + maxHr + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      // Surgery Section
+      if (rx.mode === 'pre_surgery' || rx.mode === 'post_surgery') {
+        html += '<div class="mb-4 bg-pink-50 rounded-xl p-4 border border-pink-200">' +
+          '<p class="text-xs font-bold text-pink-700 mb-2">&#x1F3E5; Reporte Quirurgico</p>';
+        if (baseline) {
+          html += '<div class="grid grid-cols-2 gap-2 mb-2">' +
+            '<div class="text-center"><p class="text-sm font-bold text-pink-600">' + (baseline.avgHr || '--') + '</p><p class="text-[9px] text-pink-400">HR Prom. Baseline</p></div>' +
+            '<div class="text-center"><p class="text-sm font-bold text-pink-600">' + (baseline.avgHrv || '--') + '</p><p class="text-[9px] text-pink-400">HRV Prom. Baseline</p></div>' +
+          '</div>';
+          if (rx.mode === 'post_surgery' && lastHr && baseline.avgHr) {
+            var recoveryScore = Math.max(0, Math.min(100, Math.round(100 - Math.abs(lastHr - baseline.avgHr) * 2)));
+            html += '<div class="text-center mb-2">' +
+              '<p class="text-lg font-black text-pink-600">' + recoveryScore + '%</p>' +
+              '<p class="text-[9px] text-pink-400">Score de Recuperacion</p>' +
+            '</div>';
+          }
+          if (baseline.completed) {
+            html += '<p class="text-[10px] text-pink-500 font-semibold">Baseline completado</p>';
+          } else {
+            html += '<button class="mon-complete-baseline w-full py-2 rounded-lg bg-pink-200 text-pink-700 text-xs font-bold hover:bg-pink-300 transition" data-email="' + escHtml(email) + '">Completar Baseline</button>';
+          }
+        } else {
+          html += '<p class="text-[10px] text-pink-400">Sin datos de baseline</p>' +
+            '<button class="mon-complete-baseline w-full py-2 mt-2 rounded-lg bg-pink-200 text-pink-700 text-xs font-bold hover:bg-pink-300 transition" data-email="' + escHtml(email) + '">Iniciar Baseline</button>';
+        }
+        html += '</div>';
+      }
+
+      // Alert History
+      html += '<div class="mb-4">' +
+        '<p class="text-xs font-bold text-gray-600 mb-2">Historial de Alertas</p>';
+      if (alerts.length === 0) {
+        html += '<p class="text-[10px] text-gray-400 text-center py-3">Sin alertas registradas</p>';
+      } else {
+        html += '<div class="space-y-1 max-h-40 overflow-y-auto">';
+        alerts.slice(-15).reverse().forEach(function(a) {
+          var lc = a.level === 'critical' ? 'bg-red-50 text-red-600 border-red-100' :
+                   a.level === 'warning' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                   'bg-yellow-50 text-yellow-600 border-yellow-100';
+          html += '<div class="' + lc + ' border rounded-lg px-3 py-1.5 text-[10px]">' +
+            '<span class="font-bold">' + escHtml(a.type || 'Alerta') + '</span>' +
+            (a.value !== undefined ? ' - ' + escHtml(String(a.value)) : '') +
+            '<span class="float-right opacity-60">' + (a.timestamp ? timeAgo(a.timestamp) : '') + '</span>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Action buttons
+      html += '<div class="flex gap-2 mb-2">' +
+        '<button id="mon-change-mode" class="flex-1 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition">Cambiar Modo</button>' +
+        '<button id="mon-stop" class="flex-1 py-2.5 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition">Detener Monitoreo</button>' +
+      '</div>' +
+      '<button id="mon-report" class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition mb-2">Generar Reporte</button>';
+
+      html += '</div>';
+
+      content.innerHTML = html;
+      modal.classList.remove('hidden');
+
+      // Close button
+      document.getElementById('close-mon-modal').onclick = function() {
+        modal.classList.add('hidden');
+      };
+      modal.onclick = function(e) {
+        if (e.target === modal) modal.classList.add('hidden');
+      };
+
+      // Complete baseline
+      var baselineBtn = content.querySelector('.mon-complete-baseline');
+      if (baselineBtn) {
+        baselineBtn.onclick = function() {
+          var b = getJSON('dya_surgery_baseline_' + email, {});
+          var buf = getJSON('dya_wearable_buffers_' + email, null);
+          if (buf && buf.hr && buf.hr.length > 0) {
+            var sum = buf.hr.reduce(function(a, c) { return a + c; }, 0);
+            b.avgHr = Math.round(sum / buf.hr.length);
+          }
+          if (buf && buf.hrv && buf.hrv.sdnn) {
+            b.avgHrv = buf.hrv.sdnn;
+          }
+          b.completed = true;
+          b.completedAt = new Date().toISOString();
+          localStorage.setItem('dya_surgery_baseline_' + email, JSON.stringify(b));
+          addAuditLog('baseline_completed', email, 'Baseline completado');
+          openMonitoringDetail(email, name);
+        };
+      }
+
+      // Change mode
+      document.getElementById('mon-change-mode').onclick = function() {
+        var modeHtml = '<div class="p-5"><h3 class="text-sm font-bold text-gray-800 mb-3">Cambiar Modo</h3><div class="space-y-2">';
+        MONITORING_MODES.forEach(function(m) {
+          var sel = m.id === rx.mode ? 'border-indigo-400 bg-indigo-50' : 'border-gray-200';
+          modeHtml += '<button class="mon-mode-select w-full py-3 px-4 rounded-xl border ' + sel + ' text-left flex items-center gap-3 hover:bg-indigo-50 transition" data-mode="' + m.id + '">' +
+            '<span class="text-xl">' + m.icon + '</span>' +
+            '<span class="text-sm font-semibold text-gray-700">' + escHtml(m.label) + '</span>' +
+          '</button>';
+        });
+        modeHtml += '</div></div>';
+        content.innerHTML = modeHtml;
+        var modeBtns = content.querySelectorAll('.mon-mode-select');
+        modeBtns.forEach(function(mb) {
+          mb.onclick = function() {
+            rx.mode = mb.dataset.mode;
+            rx.modeChangedAt = new Date().toISOString();
+            localStorage.setItem('dya_monitoring_prescription_' + email, JSON.stringify(rx));
+            addAuditLog('monitoring_mode_changed', email, 'Nuevo modo: ' + mb.dataset.mode);
+            openMonitoringDetail(email, name);
+          };
+        });
+      };
+
+      // Stop monitoring
+      document.getElementById('mon-stop').onclick = function() {
+        showConfirm('Detener monitoreo para este paciente?', function() {
+          rx.active = false;
+          rx.stoppedAt = new Date().toISOString();
+          localStorage.setItem('dya_monitoring_prescription_' + email, JSON.stringify(rx));
+          addAuditLog('monitoring_stopped', email, 'Modo: ' + rx.mode);
+          modal.classList.add('hidden');
+          renderMonitoringTab(document.getElementById('tab-content'));
+        });
+      };
+
+      // Generate report
+      document.getElementById('mon-report').onclick = function() {
+        var reportHtml = '<div class="p-5">' +
+          '<div class="flex items-center justify-between mb-4">' +
+            '<h3 class="text-lg font-bold text-gray-800">Reporte de Monitoreo</h3>' +
+            '<button id="close-report" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 text-sm font-bold">&times;</button>' +
+          '</div>' +
+          '<div class="border border-gray-200 rounded-xl p-4 text-xs text-gray-600 space-y-2" id="mon-report-content">' +
+            '<p class="text-sm font-bold text-gray-800 text-center mb-3">MiDoctorYa - Reporte Cardiaco</p>' +
+            '<p><strong>Paciente:</strong> ' + escHtml(name || email) + '</p>' +
+            '<p><strong>Email:</strong> ' + escHtml(email) + '</p>' +
+            '<p><strong>Doctor:</strong> ' + escHtml(rx.doctorName) + '</p>' +
+            '<p><strong>Modo:</strong> ' + escHtml(mode.label) + '</p>' +
+            '<p><strong>Nivel de Alerta:</strong> ' + escHtml(rx.alertLevel || 'medio') + '</p>' +
+            '<p><strong>Activado:</strong> ' + escHtml(rx.activatedAt || 'N/A') + '</p>' +
+            '<p><strong>Ultimo HR:</strong> ' + (lastHr !== null ? lastHr + ' bpm' : 'N/A') + '</p>';
+        if (hrv) {
+          reportHtml += '<p><strong>HRV SDNN:</strong> ' + (hrv.sdnn || 'N/A') + '</p>' +
+            '<p><strong>HRV RMSSD:</strong> ' + (hrv.rmssd || 'N/A') + '</p>';
+        }
+        if (baseline) {
+          reportHtml += '<p><strong>Baseline HR Prom:</strong> ' + (baseline.avgHr || 'N/A') + '</p>' +
+            '<p><strong>Baseline HRV Prom:</strong> ' + (baseline.avgHrv || 'N/A') + '</p>';
+        }
+        if (rx.notes) {
+          reportHtml += '<p><strong>Notas:</strong> ' + escHtml(rx.notes) + '</p>';
+        }
+        reportHtml += '<p><strong>Alertas totales:</strong> ' + alerts.length + '</p>' +
+            '<p class="text-[9px] text-gray-400 mt-3 text-center">Generado: ' + new Date().toISOString() + '</p>' +
+          '</div>' +
+          '<button id="mon-print-report" class="w-full py-2.5 mt-3 rounded-xl gradient-primary text-white text-xs font-bold">Imprimir Reporte</button>' +
+          '<button id="mon-export-json" class="w-full py-2.5 mt-2 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition">Exportar JSON</button>' +
+        '</div>';
+        content.innerHTML = reportHtml;
+
+        document.getElementById('close-report').onclick = function() {
+          openMonitoringDetail(email, name);
+        };
+
+        document.getElementById('mon-print-report').onclick = function() {
+          var printContent = document.getElementById('mon-report-content').innerHTML;
+          var win = window.open('', '_blank');
+          win.document.write('<html><head><title>Reporte Cardiaco</title><style>body{font-family:sans-serif;padding:20px;font-size:13px;} p{margin:4px 0;}</style></head><body>' + printContent + '</body></html>');
+          win.document.close();
+          win.print();
+        };
+
+        document.getElementById('mon-export-json').onclick = function() {
+          var data = { prescription: rx, lastHr: lastHr, hrv: hrv, baseline: baseline, alerts: alerts, generatedAt: new Date().toISOString() };
+          var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'reporte_monitoreo_' + email.replace('@', '_') + '.json';
+          a.click();
+          URL.revokeObjectURL(url);
+        };
+      };
+    }
+
+    // ==================== INIT ====================
+    tryAutoLogin();
+
+  })();
+  </script>
+</body>
+</html>

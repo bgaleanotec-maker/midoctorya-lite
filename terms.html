@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366F1">
+  <title>Terminos y Condiciones — MiDoctorYa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366F1',
+            'primary-dark': '#4F46E5',
+            navy: '#0f172a',
+            'navy-light': '#1e293b',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    h2 { scroll-margin-top: 80px; }
+  </style>
+</head>
+<body class="bg-navy text-gray-200 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-navy-light/80 backdrop-blur-lg border-b border-white/10 sticky top-0 z-50">
+    <div class="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+      <a href="index.html" class="text-primary hover:text-primary-dark transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <h1 class="text-lg font-bold text-white">Terminos y Condiciones</h1>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+
+    <p class="text-sm text-gray-400 mb-6">Ultima actualizacion: Abril 2026</p>
+
+    <!-- TOC -->
+    <nav class="bg-navy-light/50 rounded-xl p-4 mb-8 border border-white/5">
+      <p class="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold">Contenido</p>
+      <ol class="text-sm space-y-1.5 text-primary list-decimal list-inside">
+        <li><a href="#identificacion" class="hover:underline">Identificacion del Prestador</a></li>
+        <li><a href="#objeto" class="hover:underline">Objeto</a></li>
+        <li><a href="#definiciones" class="hover:underline">Definiciones</a></li>
+        <li><a href="#naturaleza" class="hover:underline">Naturaleza del Servicio</a></li>
+        <li><a href="#registro" class="hover:underline">Registro y Acceso</a></li>
+        <li><a href="#suscripciones" class="hover:underline">Suscripciones y Pagos</a></li>
+        <li><a href="#uso" class="hover:underline">Uso del Servicio</a></li>
+        <li><a href="#propiedad" class="hover:underline">Propiedad Intelectual</a></li>
+        <li><a href="#limitacion" class="hover:underline">Limitacion de Responsabilidad</a></li>
+        <li><a href="#datos" class="hover:underline">Proteccion de Datos</a></li>
+        <li><a href="#modificaciones" class="hover:underline">Modificaciones</a></li>
+        <li><a href="#ley" class="hover:underline">Ley Aplicable y Jurisdiccion</a></li>
+        <li><a href="#contacto" class="hover:underline">Contacto</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. Identificacion -->
+    <section id="identificacion" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">1</span>
+        Identificacion del Prestador
+      </h2>
+      <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5 space-y-2 text-sm">
+        <p><strong class="text-gray-300">Razon Social:</strong> [RAZON_SOCIAL]</p>
+        <p><strong class="text-gray-300">NIT:</strong> [NIT]</p>
+        <p><strong class="text-gray-300">Direccion:</strong> [DIRECCION]</p>
+        <p><strong class="text-gray-300">Ciudad:</strong> Bogota D.C., Colombia</p>
+        <p><strong class="text-gray-300">Telefono:</strong> [TELEFONO]</p>
+        <p><strong class="text-gray-300">Correo electronico:</strong> [EMAIL_LEGAL]</p>
+        <p><strong class="text-gray-300">Sitio web:</strong> midoctorya.com</p>
+      </div>
+    </section>
+
+    <!-- 2. Objeto -->
+    <section id="objeto" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">2</span>
+        Objeto
+      </h2>
+      <p class="text-sm leading-relaxed mb-3">
+        Los presentes Terminos y Condiciones (en adelante, los "Terminos") regulan el acceso y uso de la plataforma tecnologica <strong class="text-white">MiDoctorYa</strong> (en adelante, la "Plataforma"), una aplicacion web progresiva (PWA) de <strong class="text-white">bienestar y entrenamiento</strong> que ofrece funcionalidades de fitness, nutricion con inteligencia artificial, manejo del estres y agendamiento de citas con profesionales de salud.
+      </p>
+      <p class="text-sm leading-relaxed">
+        Al acceder, registrarse o utilizar la Plataforma, el Usuario acepta integramente estos Terminos. Si no esta de acuerdo con alguna de las condiciones aqui establecidas, debera abstenerse de utilizar la Plataforma.
+      </p>
+    </section>
+
+    <!-- 3. Definiciones -->
+    <section id="definiciones" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">3</span>
+        Definiciones
+      </h2>
+      <div class="space-y-3 text-sm">
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Usuario:</strong> Toda persona natural que accede, se registra o utiliza la Plataforma en cualquiera de sus funcionalidades.</p>
+        </div>
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Paciente:</strong> Usuario que utiliza la Plataforma para monitorear indicadores de bienestar, agendar citas o conectar con profesionales de salud.</p>
+        </div>
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Profesional de Salud:</strong> Medico, terapeuta u otro profesional debidamente habilitado ante las autoridades colombianas que ofrece servicios a traves de la Plataforma.</p>
+        </div>
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Plataforma:</strong> La aplicacion web progresiva MiDoctorYa, incluyendo todos sus modulos (fitness, nutricion, estres, citas, wearables), accesible a traves de navegadores web y como aplicacion instalable.</p>
+        </div>
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Dispositivo Wearable:</strong> Cualquier dispositivo electronico de consumo (banda de pecho, reloj inteligente, pulsera de actividad) compatible con la Plataforma, que recopila datos biometricos estimados mediante sensores.</p>
+        </div>
+        <div class="bg-navy-light/50 rounded-lg p-4 border border-white/5">
+          <p><strong class="text-white">Datos Biometricos:</strong> Informacion estimada obtenida de Dispositivos Wearable, incluyendo pero no limitada a: frecuencia cardiaca, saturacion de oxigeno (SpO2), variabilidad de frecuencia cardiaca (HRV), pasos, patrones de sueno, nivel de estres y temperatura corporal. Estos datos son estimaciones de sensores de consumo y NO constituyen mediciones clinicas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Naturaleza del Servicio -->
+    <section id="naturaleza" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">4</span>
+        Naturaleza del Servicio
+      </h2>
+
+      <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-4">
+        <p class="text-red-400 font-bold text-sm uppercase tracking-wider mb-3">Aviso Legal Importante</p>
+        <ul class="space-y-2 text-sm">
+          <li class="flex gap-2">
+            <span class="text-red-400 font-bold shrink-0">1.</span>
+            <span>MiDoctorYa es una plataforma tecnologica de <strong class="text-white">BIENESTAR Y ENTRENAMIENTO</strong>. Su finalidad es ofrecer herramientas para el seguimiento de habitos saludables, actividad fisica, nutricion y manejo del estres.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-red-400 font-bold shrink-0">2.</span>
+            <span>MiDoctorYa <strong class="text-white">NO es un dispositivo medico certificado</strong> por INVIMA, FDA ni ningun organismo regulador de dispositivos medicos.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-red-400 font-bold shrink-0">3.</span>
+            <span>MiDoctorYa <strong class="text-white">NO reemplaza la consulta medica profesional</strong>. Ante cualquier sintoma, condicion de salud o emergencia, consulte a un profesional de salud calificado o contacte a los servicios de emergencia (123 en Colombia).</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-red-400 font-bold shrink-0">4.</span>
+            <span>MiDoctorYa <strong class="text-white">NO provee diagnosticos medicos</strong>. Ninguna informacion, dato o sugerencia proporcionada por la Plataforma debe interpretarse como un diagnostico medico.</span>
+          </li>
+          <li class="flex gap-2">
+            <span class="text-red-400 font-bold shrink-0">5.</span>
+            <span>Los datos obtenidos de Dispositivos Wearable son <strong class="text-white">ESTIMACIONES</strong> basadas en sensores de consumo y algoritmos de software, <strong class="text-white">NO son mediciones clinicas</strong>. Pueden contener imprecisiones, falsos positivos y falsos negativos.</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="text-sm leading-relaxed">
+        La Plataforma facilita la conexion entre Usuarios y Profesionales de Salud independientes para el agendamiento de citas. MiDoctorYa actua unicamente como intermediario tecnologico y no es responsable de los servicios profesionales prestados por los Profesionales de Salud, quienes ejercen de manera autonoma e independiente.
+      </p>
+    </section>
+
+    <!-- 5. Registro y Acceso -->
+    <section id="registro" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">5</span>
+        Registro y Acceso
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">5.1.</strong> Para acceder a las funcionalidades de la Plataforma, el Usuario debera crear una cuenta proporcionando informacion veraz, completa y actualizada.</p>
+        <p><strong class="text-gray-300">5.2.</strong> El Usuario es responsable de mantener la confidencialidad de sus credenciales de acceso y de toda actividad realizada bajo su cuenta.</p>
+        <p><strong class="text-gray-300">5.3.</strong> La Plataforma esta dirigida exclusivamente a personas mayores de dieciocho (18) anos. Al registrarse, el Usuario declara y garantiza ser mayor de edad.</p>
+        <p><strong class="text-gray-300">5.4.</strong> MiDoctorYa se reserva el derecho de suspender o cancelar cuentas que proporcionen informacion falsa o incumplan estos Terminos.</p>
+        <p><strong class="text-gray-300">5.5.</strong> El Usuario debera notificar inmediatamente a MiDoctorYa sobre cualquier uso no autorizado de su cuenta.</p>
+      </div>
+    </section>
+
+    <!-- 6. Suscripciones y Pagos -->
+    <section id="suscripciones" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">6</span>
+        Suscripciones y Pagos
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">6.1. Planes y Precios.</strong> La Plataforma ofrece diferentes planes de suscripcion cuyos precios, caracteristicas y condiciones se detallan en la seccion de planes dentro de la Plataforma. Todos los precios incluyen los impuestos aplicables.</p>
+
+        <p><strong class="text-gray-300">6.2. Procesamiento de Pagos.</strong> Los pagos se procesan a traves de Mercado Pago, un proveedor de pagos autorizado. MiDoctorYa no almacena datos financieros del Usuario (numeros de tarjeta, datos bancarios). El tratamiento de dichos datos se rige por la politica de privacidad de Mercado Pago.</p>
+
+        <p><strong class="text-gray-300">6.3. Renovacion.</strong> Las suscripciones se renuevan automaticamente al final de cada periodo, salvo que el Usuario cancele antes de la fecha de renovacion.</p>
+
+        <p><strong class="text-gray-300">6.4. Cancelacion.</strong> El Usuario puede cancelar su suscripcion en cualquier momento a traves de la Plataforma. La cancelacion surtira efecto al final del periodo de facturacion vigente, manteniendose el acceso hasta dicha fecha.</p>
+
+        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+          <p><strong class="text-yellow-400">6.5. Derecho de Retracto (Art. 47, Ley 1480 de 2011).</strong> De conformidad con el Estatuto del Consumidor colombiano, el Usuario tiene derecho a retractarse de la compra dentro de los <strong class="text-white">cinco (5) dias habiles</strong> siguientes a la celebracion del contrato de suscripcion. Para ejercer este derecho, el Usuario debera comunicarse a traves de los canales indicados en la seccion de Contacto. MiDoctorYa procedera a la devolucion del dinero dentro de los treinta (30) dias calendario siguientes a la solicitud.</p>
+        </div>
+
+        <p><strong class="text-gray-300">6.6. Reversibilidad del Pago.</strong> Conforme al Art. 51 de la Ley 1480 de 2011, el Usuario podra solicitar la reversibilidad del pago cuando: (a) sea victima de fraude; (b) la transaccion no haya sido autorizada; (c) el servicio no corresponda a lo contratado; (d) el servicio no sea recibido.</p>
+
+        <p><strong class="text-gray-300">6.7. Facturacion.</strong> MiDoctorYa emitira factura electronica por cada transaccion conforme a la normativa de la DIAN vigente.</p>
+      </div>
+    </section>
+
+    <!-- 7. Uso del Servicio -->
+    <section id="uso" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">7</span>
+        Uso del Servicio
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">7.1. Usos Permitidos.</strong> La Plataforma esta destinada a:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1 text-gray-300">
+          <li>Seguimiento de habitos de bienestar y actividad fisica.</li>
+          <li>Consulta de rutinas de ejercicio y recomendaciones de fitness.</li>
+          <li>Analisis nutricional orientativo mediante inteligencia artificial.</li>
+          <li>Monitoreo de indicadores de bienestar con Dispositivos Wearable compatibles.</li>
+          <li>Manejo del estres y registro de estado animico.</li>
+          <li>Agendamiento de citas con Profesionales de Salud.</li>
+        </ul>
+
+        <p><strong class="text-gray-300">7.2. Usos Prohibidos.</strong> El Usuario se compromete a NO:</p>
+        <ul class="list-disc list-inside ml-4 space-y-1 text-gray-300">
+          <li>Utilizar la Plataforma como sustituto de atencion medica profesional.</li>
+          <li>Tomar decisiones medicas basandose exclusivamente en los datos proporcionados por la Plataforma.</li>
+          <li>Ignorar o retrasar la busqueda de atencion medica por informacion obtenida en la Plataforma.</li>
+          <li>Intentar acceder a cuentas de otros Usuarios.</li>
+          <li>Realizar ingenieria inversa, descompilar o manipular el codigo de la Plataforma.</li>
+          <li>Utilizar la Plataforma para fines ilicitos o contrarios a la moral y las buenas costumbres.</li>
+          <li>Compartir sus credenciales de acceso con terceros.</li>
+          <li>Transmitir virus, malware u otro codigo danino.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 8. Propiedad Intelectual -->
+    <section id="propiedad" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">8</span>
+        Propiedad Intelectual
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">8.1.</strong> Todos los derechos de propiedad intelectual sobre la Plataforma, incluyendo pero no limitado a: codigo fuente, diseno, interfaz de usuario, logotipos, marcas, nombres comerciales, algoritmos, contenidos y documentacion, son propiedad exclusiva de [RAZON_SOCIAL] o sus licenciantes.</p>
+
+        <p><strong class="text-gray-300">8.2.</strong> El acceso y uso de la Plataforma no confiere al Usuario ningun derecho de propiedad intelectual sobre la misma. Se concede una licencia limitada, no exclusiva, no transferible y revocable para el uso personal del Usuario conforme a estos Terminos.</p>
+
+        <p><strong class="text-gray-300">8.3.</strong> Los contenidos generados por inteligencia artificial (analisis nutricionales, recomendaciones) son propiedad de [RAZON_SOCIAL]. Los datos personales del Usuario son y seguiran siendo propiedad del Usuario.</p>
+      </div>
+    </section>
+
+    <!-- 9. Limitacion de Responsabilidad -->
+    <section id="limitacion" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">9</span>
+        Limitacion de Responsabilidad
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">9.1.</strong> MiDoctorYa <strong class="text-white">no sera responsable</strong> por la interpretacion erronea que el Usuario o terceros hagan de los datos biometricos, estimaciones o informacion proporcionada por la Plataforma.</p>
+
+        <p><strong class="text-gray-300">9.2.</strong> MiDoctorYa <strong class="text-white">no sera responsable</strong> por fallos, imprecisiones, errores de lectura, desconexiones o mal funcionamiento de los Dispositivos Wearable, los cuales son productos de terceros no controlados por la Plataforma.</p>
+
+        <p><strong class="text-gray-300">9.3.</strong> MiDoctorYa <strong class="text-white">no sera responsable</strong> por decisiones medicas, de salud o de cualquier otra indole que el Usuario tome basandose total o parcialmente en la informacion proporcionada por la Plataforma.</p>
+
+        <p><strong class="text-gray-300">9.4.</strong> MiDoctorYa <strong class="text-white">no sera responsable</strong> por los servicios profesionales prestados por los Profesionales de Salud que utilicen la Plataforma como canal de comunicacion o agendamiento. La relacion medico-paciente se establece directamente entre el Profesional de Salud y el Usuario.</p>
+
+        <p><strong class="text-gray-300">9.5.</strong> MiDoctorYa <strong class="text-white">no sera responsable</strong> por danos indirectos, incidentales, especiales, consecuenciales o punitivos derivados del uso o la imposibilidad de uso de la Plataforma.</p>
+
+        <div class="bg-navy-light/50 border border-white/10 rounded-lg p-4">
+          <p><strong class="text-gray-300">9.6. Limite de Responsabilidad.</strong> En todo caso, la responsabilidad total acumulada de MiDoctorYa frente al Usuario, por cualquier concepto, no excedera el monto total efectivamente pagado por el Usuario a MiDoctorYa durante los doce (12) meses anteriores al evento que genere la reclamacion.</p>
+        </div>
+
+        <p><strong class="text-gray-300">9.7.</strong> Las funcionalidades de deteccion de arritmias, alertas de emergencia y monitoreo cardiaco son herramientas orientativas de bienestar. NO sustituyen un electrocardiograma (ECG) de 12 derivaciones, un oximetro certificado ni ningun equipo de grado hospitalario. En caso de emergencia, contacte inmediatamente a los servicios de emergencia (123 en Colombia).</p>
+      </div>
+    </section>
+
+    <!-- 10. Proteccion de Datos -->
+    <section id="datos" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">10</span>
+        Proteccion de Datos Personales
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">10.1.</strong> El tratamiento de datos personales por parte de MiDoctorYa se rige por la <a href="privacy.html" class="text-primary hover:underline">Politica de Privacidad</a>, la cual forma parte integral de estos Terminos.</p>
+
+        <p><strong class="text-gray-300">10.2.</strong> Al aceptar estos Terminos, el Usuario autoriza expresamente el tratamiento de sus datos personales, incluyendo datos sensibles (datos biometricos y de salud), conforme a lo dispuesto en la Ley 1581 de 2012 y la Politica de Privacidad de MiDoctorYa.</p>
+
+        <p><strong class="text-gray-300">10.3.</strong> El Usuario puede revocar su autorizacion y ejercer sus derechos de acceso, rectificacion, cancelacion y oposicion en cualquier momento, conforme al procedimiento descrito en la Politica de Privacidad.</p>
+      </div>
+    </section>
+
+    <!-- 11. Modificaciones -->
+    <section id="modificaciones" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">11</span>
+        Modificaciones
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">11.1.</strong> MiDoctorYa se reserva el derecho de modificar estos Terminos en cualquier momento. Las modificaciones seran notificadas al Usuario con al menos quince (15) dias calendario de anticipacion a traves de la Plataforma, correo electronico u otro medio idoneo.</p>
+
+        <p><strong class="text-gray-300">11.2.</strong> El uso continuado de la Plataforma despues de la entrada en vigor de las modificaciones constituye la aceptacion de los nuevos Terminos. Si el Usuario no esta de acuerdo con las modificaciones, debera dejar de utilizar la Plataforma y cancelar su cuenta.</p>
+
+        <p><strong class="text-gray-300">11.3.</strong> Las versiones anteriores de los Terminos estaran disponibles para consulta del Usuario.</p>
+      </div>
+    </section>
+
+    <!-- 12. Ley Aplicable -->
+    <section id="ley" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">12</span>
+        Ley Aplicable y Jurisdiccion
+      </h2>
+      <div class="text-sm space-y-3 leading-relaxed">
+        <p><strong class="text-gray-300">12.1.</strong> Estos Terminos se rigen e interpretan de conformidad con las leyes de la Republica de Colombia.</p>
+
+        <p><strong class="text-gray-300">12.2.</strong> Para la resolucion de cualquier controversia derivada de estos Terminos, las partes se someten a la jurisdiccion de los jueces y tribunales de la ciudad de Bogota D.C., Colombia.</p>
+
+        <p><strong class="text-gray-300">12.3.</strong> Sin perjuicio de lo anterior, el Usuario podra presentar reclamaciones ante la Superintendencia de Industria y Comercio (SIC) en ejercicio de sus derechos como consumidor.</p>
+
+        <p><strong class="text-gray-300">12.4.</strong> Las partes podran acudir a mecanismos alternativos de solucion de conflictos (mediacion, conciliacion) antes de iniciar cualquier procedimiento judicial.</p>
+      </div>
+    </section>
+
+    <!-- 13. Contacto -->
+    <section id="contacto" class="mb-10">
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+        <span class="bg-primary/20 text-primary text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center">13</span>
+        Contacto
+      </h2>
+      <div class="bg-navy-light/50 rounded-xl p-5 border border-white/5 space-y-2 text-sm">
+        <p>Para consultas, reclamaciones o ejercicio de derechos relacionados con estos Terminos:</p>
+        <p><strong class="text-gray-300">Correo electronico:</strong> [EMAIL_LEGAL]</p>
+        <p><strong class="text-gray-300">Telefono:</strong> [TELEFONO]</p>
+        <p><strong class="text-gray-300">Direccion:</strong> [DIRECCION], Bogota D.C., Colombia</p>
+        <p><strong class="text-gray-300">Horario de atencion:</strong> Lunes a viernes, 8:00 a.m. a 6:00 p.m. (hora Colombia, GMT-5)</p>
+        <p class="text-gray-400 mt-2">Tiempo maximo de respuesta a PQR: 15 dias habiles conforme a la Ley 1480 de 2011.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="border-t border-white/10 pt-6 mt-10 text-center">
+      <p class="text-xs text-gray-500">MiDoctorYa — Plataforma de Bienestar y Entrenamiento</p>
+      <p class="text-xs text-gray-500 mt-1">Estos Terminos y Condiciones fueron actualizados en Abril 2026.</p>
+      <div class="flex justify-center gap-4 mt-3">
+        <a href="privacy.html" class="text-xs text-primary hover:underline">Politica de Privacidad</a>
+        <a href="index.html" class="text-xs text-primary hover:underline">Volver a la App</a>
+      </div>
+    </div>
+
+  </main>
+
+</body>
+</html>

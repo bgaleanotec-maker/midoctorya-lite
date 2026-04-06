@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#6366F1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MiDoctorYa">
+  <meta name="description" content="MiDoctorYa - Tu plataforma integral de bienestar: monitoreo cardiaco, fitness, nutricion IA, manejo del estres y citas medicas">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-TileColor" content="#6366F1">
+
+  <!-- Performance: Resource Hints -->
+  <link rel="preconnect" href="https://api.mercadopago.com">
+  <link rel="preconnect" href="https://api.sendgrid.com">
+  <link rel="dns-prefetch" href="https://api.mercadopago.com">
+  <link rel="preload" href="css/app.css" as="style">
+  <link rel="preload" href="js/app.js" as="script" crossorigin>
+  <!-- SEO & Social -->
+  <meta property="og:title" content="MiDoctorYa Lite - Salud Inteligente">
+  <meta property="og:description" content="Monitoreo cardiaco, fitness personalizado, nutricion con IA y citas medicas en una sola app">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="img/banner-promo.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+
+  <title>MiDoctorYa</title>
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://exercisedb.p.rapidapi.com">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#6366F1',
+            'primary-dark': '#4F46E5',
+            'primary-light': '#A5B4FC',
+            accent: '#10B981',
+            'accent-dark': '#059669',
+            navy: '#0f172a',
+            'navy-light': '#1e293b',
+            habits: '#8B5CF6',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+            'slide-down': 'slideDown 0.3s ease-out',
+            'pulse-slow': 'pulse 3s infinite',
+            'breathe': 'breathe 16s infinite',
+            'pop': 'pop 0.3s ease-out',
+            'float': 'float 6s ease-in-out infinite',
+            'shimmer': 'shimmer 2s infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            slideDown: { '0%': { opacity: '0', transform: 'translateY(-10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            breathe: {
+              '0%,100%': { transform: 'scale(1)', opacity: '0.6' },
+              '25%': { transform: 'scale(1.3)', opacity: '1' },
+              '50%': { transform: 'scale(1.3)', opacity: '1' },
+              '75%': { transform: 'scale(1)', opacity: '0.6' },
+            },
+            pop: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+            float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-10px)' } },
+            shimmer: { '0%': { backgroundPosition: '200% 0' }, '100%': { backgroundPosition: '-200% 0' } },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body class="bg-gray-50 text-gray-800 overscroll-none select-none">
+
+  <!-- Splash Screen -->
+  <div id="splash" class="fixed inset-0 z-[200] flex items-center justify-center gradient-landing transition-opacity duration-500 overflow-hidden">
+    <!-- Background orbs -->
+    <div class="landing-orb landing-orb-1"></div>
+    <div class="landing-orb landing-orb-2"></div>
+    <div class="text-center relative z-10">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-3xl gradient-primary shadow-2xl shadow-primary/40 flex items-center justify-center landing-logo-entrance">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-black text-white tracking-tight animate-fade-in">MiDoctor<span class="text-gradient">Ya</span></h1>
+      <p class="text-white/35 text-sm mt-2.5 font-medium animate-fade-in" style="animation-delay:200ms">Tu bienestar, en tus manos</p>
+      <div class="mt-8 flex justify-center gap-1.5">
+        <div class="w-2 h-2 rounded-full bg-primary/80 animate-bounce" style="animation-delay:0ms"></div>
+        <div class="w-2 h-2 rounded-full bg-primary/80 animate-bounce" style="animation-delay:150ms"></div>
+        <div class="w-2 h-2 rounded-full bg-primary/80 animate-bounce" style="animation-delay:300ms"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Screen (hidden initially, shown after splash if not logged in) -->
+  <div id="auth-screen" class="fixed inset-0 z-[150] hidden">
+    <!-- Rendered by JS -->
+  </div>
+
+  <!-- Install Banner -->
+  <div id="install-banner" class="fixed top-0 left-0 right-0 z-[90] hidden">
+    <div class="mx-3 mt-3 install-banner-card p-4 animate-slide-down">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-sm text-gray-800 tracking-tight">Instalar MiDoctorYa</p>
+          <p class="text-xs text-gray-400 mt-0.5">Acceso rapido desde tu pantalla de inicio</p>
+        </div>
+        <button id="install-btn" class="px-5 py-2.5 rounded-xl gradient-primary text-white text-xs font-bold shadow-lg shadow-primary/30 active:scale-[0.96] transition-transform btn-press flex-shrink-0">Instalar</button>
+        <button id="install-dismiss" class="p-1.5 text-gray-300 hover:text-gray-500 transition-colors rounded-full">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app" class="min-h-screen flex flex-col hidden">
+    <main id="main-content" class="flex-1 pb-20 overflow-y-auto"></main>
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-100/80 shadow-lg z-50 safe-bottom">
+      <div class="flex justify-around items-center h-16 max-w-lg mx-auto px-2"></div>
+    </nav>
+  </div>
+
+  <!-- Legal Footer -->
+  <div id="legal-footer" class="fixed bottom-20 left-0 right-0 text-center py-1 z-10 pointer-events-none">
+    <div class="pointer-events-auto inline-flex gap-3">
+      <a href="terms.html" class="text-[9px] text-gray-300 hover:text-gray-500 transition">Terminos y Condiciones</a>
+      <span class="text-[9px] text-gray-200">|</span>
+      <a href="privacy.html" class="text-[9px] text-gray-300 hover:text-gray-500 transition">Politica de Privacidad</a>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-800/95 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-medium z-[100] transition-all duration-300 opacity-0 -translate-y-4 pointer-events-none backdrop-blur-lg border border-white/5"></div>
+
+  <script type="module" src="js/app.js?v=19"></script>
+  <script>
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    // PWA Install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('install-banner');
+      if (banner && !localStorage.getItem('dya_installed')) banner.classList.remove('hidden');
+    });
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'install-btn' || e.target.closest('#install-btn')) {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(() => {
+            document.getElementById('install-banner').classList.add('hidden');
+            localStorage.setItem('dya_installed', '1');
+          });
+        }
+      }
+      if (e.target.id === 'install-dismiss' || e.target.closest('#install-dismiss')) {
+        document.getElementById('install-banner').classList.add('hidden');
+      }
+    });
+    window.addEventListener('appinstalled', () => {
+      document.getElementById('install-banner')?.classList.add('hidden');
+      localStorage.setItem('dya_installed', '1');
+    });
+  </script>
+</body>
+</html>

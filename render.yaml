@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: midoctorya-lite
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server_prod:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120 --access-logfile -
+    envVars:
+      - key: MP_ACCESS_TOKEN
+        sync: false
+      - key: MP_SANDBOX
+        value: "true"
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        value: "noreply@midoctorya.com"
+      - key: ULTRAMSG_INSTANCE
+        sync: false
+      - key: ULTRAMSG_TOKEN
+        sync: false
+      - key: GOOGLE_FIT_CLIENT_ID
+        sync: false
+      - key: GOOGLE_FIT_CLIENT_SECRET
+        sync: false
+      - key: ADMIN_PIN
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+    healthCheckPath: /api/health
+    autoDeploy: true
+    plan: starter
+    scaling:
+      minInstances: 1
+      maxInstances: 10
+      targetMemoryPercent: 80
+      targetCPUPercent: 70
