@@ -27,7 +27,7 @@ os.chdir(DIR)
 
 MP_API_BASE = 'https://api.mercadopago.com'
 EXERCISEDB_HOST = 'exercisedb.p.rapidapi.com'
-RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', '0e15f14aa4msha719348cf83dae0p190e27jsn1e203bc962f4')
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', '')
 
 # In-memory cache for exercise images
 _image_cache = {}

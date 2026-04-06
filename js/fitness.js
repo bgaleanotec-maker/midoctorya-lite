@@ -3,6 +3,14 @@ import { t, tBP } from './i18n.js';
 import { getBodyParts, searchExercises, getExercisesByBodyPart, getExerciseDetail, getRecommendations, getSimilarByTarget, API_BASE_URL } from './api.js';
 import { showToast } from './app.js';
 
+/* ── HTML escape utility to prevent XSS from API data ────────────────── */
+function _esc(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+
 /* Resolve gifUrl: ExerciseDB API returns full URLs in gifUrl field.
    Use them directly if they start with http, otherwise treat as local path. */
 function _gifSrc(gifUrl) {
@@ -610,7 +618,7 @@ function _renderCards(listDiv, container) {
     var gifSrc = ex.gifUrl ? _gifSrc(ex.gifUrl) : '';
     var gifHtml = '';
     if (gifSrc && (gifSrc.startsWith('http') || gifSrc.startsWith('/api/'))) {
-      gifHtml = '<img src="' + gifSrc + '" alt="' + (ex.name || '') + '" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'flex items-center justify-center h-full text-4xl bg-gray-100\\\'>💪</div>\'">';
+      gifHtml = '<img src="' + _esc(gifSrc) + '" alt="' + _esc(ex.name || '') + '" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'flex items-center justify-center h-full text-4xl bg-gray-100\\\'>💪</div>\'">';
     } else {
       gifHtml = '<div class="flex items-center justify-center h-full text-4xl bg-gradient-to-br from-primary/10 to-purple-100">💪</div>';
     }

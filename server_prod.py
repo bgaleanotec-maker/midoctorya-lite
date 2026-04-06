@@ -17,6 +17,7 @@ import requests as http_requests  # avoid shadowing flask.request
 load_dotenv()
 
 app = Flask(__name__, static_folder='.', static_url_path='')
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # 2MB max request body
 
 # ---------------------------------------------------------------------------
 # Configuration from environment
@@ -29,8 +30,8 @@ app.config['ULTRAMSG_INSTANCE'] = os.getenv('ULTRAMSG_INSTANCE', '')
 app.config['ULTRAMSG_TOKEN'] = os.getenv('ULTRAMSG_TOKEN', '')
 app.config['GOOGLE_FIT_CLIENT_ID'] = os.getenv('GOOGLE_FIT_CLIENT_ID', '')
 app.config['GOOGLE_FIT_CLIENT_SECRET'] = os.getenv('GOOGLE_FIT_CLIENT_SECRET', '')
-app.config['ADMIN_PIN'] = os.getenv('ADMIN_PIN', '1234')
-app.config['RAPIDAPI_KEY'] = os.getenv('RAPIDAPI_KEY', '0e15f14aa4msha719348cf83dae0p190e27jsn1e203bc962f4')
+app.config['ADMIN_PIN'] = os.getenv('ADMIN_PIN', '')  # MUST be set via env var
+app.config['RAPIDAPI_KEY'] = os.getenv('RAPIDAPI_KEY', '')
 
 MP_API_BASE = 'https://api.mercadopago.com'
 EXERCISEDB_HOST = 'exercisedb.p.rapidapi.com'
@@ -79,6 +80,15 @@ def security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['Permissions-Policy'] = 'bluetooth=(self), vibrate=(self)'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' https://cdn.tailwindcss.com https://sdk.mercadopago.com 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob:; "
+        "connect-src 'self' https://api.mercadopago.com https://api.sendgrid.com https://exercisedb.p.rapidapi.com; "
+        "frame-src https://www.mercadopago.com.co https://www.mercadopago.com; "
+        "font-src 'self' data:;"
+    )
     if request.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store'
     elif request.path.endswith(('.js', '.css', '.png', '.jpg', '.webp')):
@@ -93,7 +103,7 @@ def security_headers(response):
 # ---------------------------------------------------------------------------
 @app.after_request
 def cors(response):
-    origin = os.getenv('ALLOWED_ORIGIN', '*')
+    origin = os.getenv('ALLOWED_ORIGIN', 'https://midoctorya-lite.onrender.com')
     response.headers['Access-Control-Allow-Origin'] = origin
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
@@ -131,6 +141,15 @@ def doctor():
 
 @app.route('/<path:path>')
 def static_files(path):
+    import re
+    # Block dotfiles (.env, .git, .claude, etc.) and sensitive files
+    if any(part.startswith('.') for part in path.split('/')):
+        return 'Not found', 404
+    SAFE_EXT = re.compile(r'\.(html|js|css|json|png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|webmanifest)$', re.I)
+    BLOCKED_FILES = {'server.py', 'server_prod.py', 'gunicorn.conf.py', 'requirements.txt',
+                     'Dockerfile', 'render.yaml', 'docker-compose.yml', 'googlefit_config.json'}
+    if path in BLOCKED_FILES or not SAFE_EXT.search(path):
+        return 'Not found', 404
     return send_from_directory('.', path)
 
 
