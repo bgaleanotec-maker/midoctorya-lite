@@ -1,7 +1,7 @@
 {
-  "name": "MiDoctorYa Lite",
-  "short_name": "DoctorYa",
-  "description": "Tu plataforma integral de bienestar: fitness con GIFs 3D, nutricion IA, manejo del estres y citas medicas",
+  "name": "MiDoctorYa - Fitness & Bienestar",
+  "short_name": "MiDoctorYa",
+  "description": "Tu plataforma integral de fitness y bienestar: ejercicios, nutricion IA, monitoreo cardiaco y citas medicas",
   "start_url": "/",
   "id": "/",
   "display": "standalone",

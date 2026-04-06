@@ -7,11 +7,7 @@ const LS_APPOINTMENTS = 'dya_appointments';
 const LS_DOCTORS      = 'dya_doctors_list';
 const LS_USER         = 'dya_user';
 
-const SEED_DOCTORS = [
-  { name: 'Dra. Maria Gonzalez',  email: 'maria.gonzalez@gmail.com',  specialty: 'Acompanamiento Fitness', available: true },
-  { name: 'Dr. Carlos Ramirez',   email: 'carlos.ramirez@gmail.com',  specialty: 'Acompanamiento Fitness', available: true },
-  { name: 'Dr. Ana Martinez',     email: 'ana.martinez@gmail.com',    specialty: 'Acompanamiento Fitness', available: true },
-];
+const SEED_DOCTORS = [];
 
 const DEFAULT_SLOTS = [
   '08:00','08:30','09:00','09:30','10:00','10:30',
@@ -50,10 +46,6 @@ function _saveAppointments(arr) {
 
 function _getDoctors() {
   let docs = JSON.parse(localStorage.getItem(LS_DOCTORS) || '[]');
-  if (!docs.length) {
-    docs = SEED_DOCTORS;
-    localStorage.setItem(LS_DOCTORS, JSON.stringify(docs));
-  }
   return docs;
 }
 
@@ -168,9 +160,9 @@ function _render() {
     + '<p class="text-xs text-white/50 mb-1">MiDoctorYa</p>'
     + '<h1 class="text-2xl font-bold mb-1 flex items-center gap-2">'
     +   '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>'
-    +   'Consultas Virtuales'
+    +   'Citas Medicas'
     + '</h1>'
-    + '<p class="text-xs text-white/60">Telemedicina por videollamada</p>'
+    + '<p class="text-xs text-white/60">Agenda tu consulta de fitness y bienestar</p>'
     + '<div class="flex gap-2 mt-3" id="apt-tabs">'
     +   '<button id="tab-book" class="px-4 py-1.5 rounded-full text-xs font-semibold transition-all '
     +     (_view === 'book' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60') + '">Agendar</button>'
@@ -236,6 +228,17 @@ function _renderStep1(el) {
     + '</div>';
 
   html += '<h3 class="font-bold text-sm text-gray-700 mb-3">' + t('apt_doctors') + '</h3>';
+
+  if (!_doctors.length) {
+    html += '<div class="text-center py-8">'
+      + '<div class="text-5xl mb-3">&#x1F468;&#x200D;&#x2695;&#xFE0F;</div>'
+      + '<p class="text-sm font-semibold text-gray-700 mb-1">No hay doctores disponibles</p>'
+      + '<p class="text-xs text-gray-400">Los profesionales de salud se registran desde el portal medico</p>'
+      + '<p class="text-xs text-gray-400 mt-1">Contacta al administrador para mas informacion</p>'
+      + '</div>';
+    el.innerHTML = html;
+    return;
+  }
 
   _doctors.forEach(function (doc, i) {
     var initial = (doc.name || 'D')[0];
@@ -389,7 +392,7 @@ function _renderStep3(el) {
     + '<h3 class="font-bold text-base text-gray-800 mb-4 text-center">Resumen de tu consulta</h3>'
     + '<div class="space-y-3">'
     +   _summaryRow('Doctor', _selDoctor.name)
-    +   _summaryRow('Tipo', 'Acompanamiento Fitness')
+    +   _summaryRow('Tipo', 'Fitness & Bienestar')
     +   _summaryRow('Modalidad', 'Videollamada (Jitsi Meet)')
     +   _summaryRow('Fecha', _formatDateNice(_selDate))
     +   _summaryRow('Hora', _selTime)
@@ -443,7 +446,7 @@ function _renderStep3(el) {
     // Create preference on server
     var prefData = {
       title: 'Consulta Virtual - ' + _selDoctor.name,
-      description: 'Consulta de Acompanamiento Fitness con ' + _selDoctor.name + ' el ' + _selDate + ' a las ' + _selTime,
+      description: 'Consulta de Fitness & Bienestar con ' + _selDoctor.name + ' el ' + _selDate + ' a las ' + _selTime,
       price: price.amount,
       currency: price.currency === 'COP' ? 'COP' : 'USD',
       access_token: mpCfg.accessToken,
@@ -753,7 +756,7 @@ function _renderMyAppointments(el) {
       +     '<div class="flex items-start justify-between">'
       +       '<div>'
       +         '<h3 class="font-bold text-sm text-gray-800">' + apt.doctorName + '</h3>'
-      +         '<p class="text-xs text-primary font-medium">Acompanamiento Fitness</p>'
+      +         '<p class="text-xs text-primary font-medium">Fitness & Bienestar</p>'
       +       '</div>'
       +       '<span class="inline-block text-[10px] px-2 py-0.5 rounded-full font-semibold ' + statusClass + '">' + statusLabel + '</span>'
       +     '</div>'

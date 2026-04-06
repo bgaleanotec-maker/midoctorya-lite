@@ -3,12 +3,13 @@ import { t, tBP } from './i18n.js';
 import { getBodyParts, searchExercises, getExercisesByBodyPart, getExerciseDetail, getRecommendations, getSimilarByTarget, API_BASE_URL } from './api.js';
 import { showToast } from './app.js';
 
-/* Resolve gifUrl: backend returns relative paths like /api/v1/fitness/external/gif/0025
-   We need to prepend the backend origin so <img src> works */
+/* Resolve gifUrl: ExerciseDB API returns full URLs in gifUrl field.
+   Use them directly if they start with http, otherwise treat as local path. */
 function _gifSrc(gifUrl) {
   if (!gifUrl) return '';
   if (gifUrl.startsWith('http')) return gifUrl;
-  return 'http://localhost:5000' + gifUrl;
+  // Relative/local path — use as-is for local fallback assets
+  return gifUrl;
 }
 
 /* ── Traduccion de nombres de ejercicios ─────────────────── */
@@ -398,46 +399,59 @@ export async function renderFitness(container) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Buenos dias' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
 
+  const quickStartParts = [
+    { key: 'chest', emoji: '💪', label: 'Pecho' },
+    { key: 'upper legs', emoji: '🦵', label: 'Piernas' },
+    { key: 'back', emoji: '🔙', label: 'Espalda' },
+    { key: 'waist', emoji: '🎯', label: 'Abdomen' },
+    { key: 'upper arms', emoji: '💪', label: 'Brazos' },
+    { key: 'cardio', emoji: '❤️', label: 'Cardio' },
+  ];
+
   container.innerHTML = `
     <!-- Hero -->
-    <div class="gradient-navy text-white px-5 pt-11 pb-8 relative overflow-hidden">
-      <div class="absolute top-[-30px] right-[-30px] w-44 h-44 bg-primary/10 rounded-full blur-2xl"></div>
-      <div class="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-blue-500/8 rounded-full blur-xl"></div>
+    <div class="relative overflow-hidden text-white" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0ea5e9 100%)">
+      <div class="absolute top-[-40px] right-[-40px] w-56 h-56 bg-white/5 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-[-30px] left-[-30px] w-40 h-40 bg-cyan-400/10 rounded-full blur-2xl"></div>
+      <div class="absolute top-1/2 right-4 w-24 h-24 bg-primary/15 rounded-full blur-2xl"></div>
 
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <p class="text-xs text-white/40 mb-0.5">MiDoctorYa</p>
-          <h1 class="text-xl font-bold">${greeting}, <span class="text-primary-light">${name}</span></h1>
+      <div class="px-5 pt-12 pb-3 relative z-10">
+        <div class="flex items-center justify-between mb-1">
+          <div>
+            <p class="text-xs text-white/50 mb-0.5 tracking-wider uppercase">MiDoctorYa</p>
+            <h1 class="text-2xl font-extrabold tracking-tight">${t('fit_title')}</h1>
+            <p class="text-sm text-white/60 mt-0.5">Tu entrenamiento personalizado</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center text-lg font-bold text-white border border-white/10 shadow-lg">${name[0]}</div>
         </div>
-        <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white">${name[0]}</div>
+        <p class="text-xs text-white/40 mt-1">${greeting}, <span class="text-primary-light font-semibold">${name}</span></p>
       </div>
 
-      <!-- Stats row -->
-      <div class="flex gap-2 mb-5">
-        <div class="flex-1 glass rounded-xl p-3 text-center">
-          <p class="text-lg font-bold text-white">0</p>
-          <p class="text-[10px] text-white/40">kcal</p>
-        </div>
-        <div class="flex-1 glass rounded-xl p-3 text-center">
-          <p class="text-lg font-bold text-white">0</p>
-          <p class="text-[10px] text-white/40">min</p>
-        </div>
-        <div class="flex-1 glass rounded-xl p-3 text-center">
-          <p class="text-lg font-bold text-white">💪</p>
-          <p class="text-[10px] text-white/40">${t('fit_title')}</p>
+      <!-- Quick-start workout cards -->
+      <div class="px-4 pb-5 pt-3 relative z-10">
+        <p class="text-[11px] text-white/50 font-semibold uppercase tracking-wider mb-2.5">Inicio rapido</p>
+        <div class="grid grid-cols-3 gap-2" id="quick-start-grid">
+          ${quickStartParts.map(p => `
+            <button data-qbp="${p.key}" class="quick-bp-btn group bg-white/10 backdrop-blur border border-white/10 rounded-2xl p-3 text-center hover:bg-white/20 active:scale-95 transition-all">
+              <div class="text-2xl mb-1 group-hover:scale-110 transition-transform">${p.emoji}</div>
+              <p class="text-[11px] font-bold text-white/90">${p.label}</p>
+            </button>
+          `).join('')}
         </div>
       </div>
 
       <!-- Search -->
-      <div class="relative">
-        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input id="fit-search" type="search" placeholder="${t('fit_search')}"
-          class="w-full bg-white/10 text-white placeholder-white/40 rounded-xl py-3 pl-10 pr-4 text-sm border border-white/10 focus:border-primary/50 focus:bg-white/20 transition" style="color:#ffffff;background:rgba(255,255,255,0.1);">
+      <div class="px-5 pb-5 relative z-10">
+        <div class="relative">
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input id="fit-search" type="search" placeholder="${t('fit_search')}"
+            class="w-full bg-white/10 backdrop-blur text-white placeholder-white/40 rounded-2xl py-3 pl-10 pr-4 text-sm border border-white/15 focus:border-primary/50 focus:bg-white/20 transition shadow-inner" style="color:#fff;background:rgba(255,255,255,0.08);">
+        </div>
       </div>
     </div>
 
     <!-- Body Part Pills -->
-    <div class="px-4 -mt-3 mb-3">
+    <div class="px-4 -mt-3 mb-3 relative z-20">
       <div id="bp-pills" class="flex gap-2 overflow-x-auto hide-scroll pb-1 pt-1"></div>
     </div>
 
@@ -455,6 +469,22 @@ export async function renderFitness(container) {
       ${_skeletons(5)}
     </div>
   `;
+
+  // Quick-start button events
+  container.querySelectorAll('.quick-bp-btn').forEach(btn => {
+    btn.onclick = () => {
+      _bodyPart = btn.dataset.qbp;
+      // Also update pills if loaded
+      const pillsDiv = container.querySelector('#bp-pills');
+      if (pillsDiv) {
+        pillsDiv.querySelectorAll('.bp-pill').forEach(b => {
+          b.classList.remove('pill-active', 'bg-white', 'text-gray-500', 'shadow-sm', 'border', 'border-gray-100');
+          b.classList.add(...(b.dataset.bp === _bodyPart ? ['pill-active'] : ['bg-white','text-gray-500','shadow-sm','border','border-gray-100']));
+        });
+      }
+      _loadByBodyPart(container);
+    };
+  });
 
   // Events
   const searchInput = container.querySelector('#fit-search');
@@ -498,15 +528,29 @@ async function _loadRecommendations(container) {
   const countDiv = container.querySelector('#exercise-count');
   if (!listDiv) return;
 
-  const data = await getRecommendations('male', 12);
-  if (data.exercises && data.exercises.length) {
-    _exercises = data.exercises;
-    if (titleDiv) titleDiv.textContent = data.day_label || t('fit_plan_title');
+  try {
+    const data = await getRecommendations('male', 12);
+    if (data && data.exercises && data.exercises.length) {
+      _exercises = data.exercises;
+      if (titleDiv) titleDiv.textContent = data.day_label || t('fit_plan_title');
+      if (countDiv) countDiv.textContent = `${_exercises.length} ejercicios`;
+      _renderCards(listDiv, container);
+      return;
+    }
+  } catch (err) {
+    console.warn('Fitness: recommendations API unavailable, using fallback.', err);
+  }
+
+  // Fallback: try body part API, then local exercises
+  try {
+    await _loadByBodyPart(container);
+  } catch (err2) {
+    console.warn('Fitness: body part API unavailable, using local exercises.', err2);
+    _exercises = LOCAL_EXERCISES.filter(e => e.bodyPart === _bodyPart);
+    if (!_exercises.length) _exercises = LOCAL_EXERCISES.slice(0, 10);
+    if (titleDiv) titleDiv.textContent = t('fit_plan_title');
     if (countDiv) countDiv.textContent = `${_exercises.length} ejercicios`;
     _renderCards(listDiv, container);
-  } else {
-    // Fallback: intentar por parte del cuerpo, luego ejercicios locales
-    await _loadByBodyPart(container);
   }
 }
 
@@ -559,29 +603,39 @@ function _renderCards(listDiv, container) {
     return;
   }
 
-  listDiv.innerHTML = _exercises.map((ex, i) => `
+  listDiv.innerHTML = _exercises.map((ex, i) => {
+    var gifSrc = ex.gifUrl ? _gifSrc(ex.gifUrl) : '';
+    var gifHtml = '';
+    if (gifSrc && gifSrc.startsWith('http')) {
+      gifHtml = '<img src="' + gifSrc + '" alt="' + (ex.name || '') + '" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'flex items-center justify-center h-full text-4xl bg-gray-100\\\'>💪</div>\'">';
+    } else {
+      gifHtml = '<div class="flex items-center justify-center h-full text-4xl bg-gradient-to-br from-primary/10 to-purple-100">💪</div>';
+    }
+
+    var bpColor = BP_COLORS[ex.bodyPart] || 'from-gray-400 to-gray-500';
+
+    return `
     <div class="exercise-card bg-white rounded-2xl shadow-sm border border-gray-100/80 overflow-hidden card-hover animate-slide-up" style="animation-delay:${Math.min(i*40, 300)}ms" data-idx="${i}">
-      <div class="flex items-center gap-3 p-3">
-        <div class="gif-container w-[76px] h-[76px] flex-shrink-0 rounded-xl">
-          ${ex.gifUrl
-            ? `<img src="${_gifSrc(ex.gifUrl)}" alt="${ex.name}" loading="lazy" class="w-full h-full" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-3xl bg-gray-50\\'>🏋️</div>'">`
-            : `<div class="w-full h-full flex items-center justify-center text-3xl bg-gray-50">🏋️</div>`}
+      <div class="flex items-center gap-3.5 p-3">
+        <div class="w-[84px] h-[84px] flex-shrink-0 rounded-xl overflow-hidden bg-gray-50 shadow-inner">
+          ${gifHtml}
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="font-bold text-[13px] text-gray-800 leading-tight capitalize line-clamp-2">${_tName(ex.name) || 'Ejercicio'}</h3>
-          <div class="flex items-center gap-1.5 mt-1.5">
-            ${ex.target ? `<span class="text-[10px] bg-primary/8 text-primary px-2 py-0.5 rounded-md font-semibold capitalize">${tBP(ex.target)}</span>` : ''}
-            ${ex.equipment && ex.equipment !== 'body weight' ? `<span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md font-medium capitalize">${_tEquip(ex.equipment)}</span>` : ''}
+          <h3 class="font-bold text-sm text-gray-800 leading-tight capitalize line-clamp-2">${_tName(ex.name) || 'Ejercicio'}</h3>
+          <div class="flex flex-wrap items-center gap-1.5 mt-2">
+            ${ex.target ? `<span class="inline-flex items-center text-[10px] bg-gradient-to-r ${bpColor} text-white px-2.5 py-0.5 rounded-full font-bold capitalize shadow-sm">${BP_ICONS[ex.bodyPart] || '🏋️'} ${tBP(ex.target)}</span>` : ''}
+            ${ex.equipment ? `<span class="inline-flex items-center text-[10px] bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full font-semibold capitalize">${_tEquip(ex.equipment)}</span>` : ''}
           </div>
-          <div class="flex gap-3 mt-1.5">
-            <span class="text-[10px] text-gray-400 font-medium">3x12</span>
+          <div class="flex gap-3 mt-2">
+            <span class="text-[10px] text-gray-400 font-medium">3 ${_l('series')} x 12 ${_l('reps')}</span>
             <span class="text-[10px] text-gray-400 font-medium">60s ${_l('rest')}</span>
           </div>
         </div>
-        <svg class="w-4 h-4 text-gray-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   listDiv.querySelectorAll('.exercise-card').forEach(card => {
     card.onclick = () => _showDetail(_exercises[parseInt(card.dataset.idx)], container);
@@ -603,10 +657,10 @@ async function _showDetail(ex, rootContainer) {
       </div>
 
       <!-- GIF -->
-      <div class="mx-4 mt-4 rounded-2xl overflow-hidden shadow-sm bg-gradient-to-br from-gray-50 to-gray-100" style="height: 220px">
-        ${ex.gifUrl
-          ? `<img src="${_gifSrc(ex.gifUrl)}" alt="${ex.name}" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-6xl\\'>🏋️</div>'">`
-          : `<div class="w-full h-full flex items-center justify-center text-6xl">🏋️</div>`}
+      <div class="mx-4 mt-4 rounded-2xl overflow-hidden shadow-md bg-gradient-to-br from-gray-50 to-gray-100" style="height: 240px">
+        ${(ex.gifUrl && _gifSrc(ex.gifUrl).startsWith('http'))
+          ? `<img src="${_gifSrc(ex.gifUrl)}" alt="${ex.name}" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-purple-50\\'>💪</div>'">`
+          : `<div class="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-purple-50">💪</div>`}
       </div>
 
       <!-- Info badges -->
@@ -669,7 +723,7 @@ async function _showDetail(ex, rootContainer) {
       sl.innerHTML = similar.filter(s => s.id !== ex.id).slice(0, 6).map(s => `
         <div class="similar-card flex-shrink-0 w-36 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden card-hover" data-id="${s.id}">
           <div class="gif-container h-24">
-            ${s.gifUrl ? `<img src="${_gifSrc(s.gifUrl)}" class="w-full h-full object-contain" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-2xl bg-gray-50\\'>🏋️</div>'">` : `<div class="w-full h-full flex items-center justify-center text-2xl bg-gray-50">🏋️</div>`}
+            ${(s.gifUrl && _gifSrc(s.gifUrl).startsWith('http')) ? `<img src="${_gifSrc(s.gifUrl)}" class="w-full h-full object-contain" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-2xl bg-gradient-to-br from-primary/10 to-purple-50\\'>💪</div>'">` : `<div class="flex items-center justify-center h-full text-2xl bg-gradient-to-br from-primary/10 to-purple-50">💪</div>`}
           </div>
           <p class="text-[11px] font-bold text-gray-700 p-2 truncate capitalize">${_tName(s.name)}</p>
         </div>

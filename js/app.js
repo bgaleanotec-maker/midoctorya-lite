@@ -10,7 +10,7 @@ import { renderReminders } from './reminders.js';
 import { checkSubscriptionStatus, initSubscription, renderBlockScreen, processReminders as processSubReminders, cleanupExpiredAccounts, renderSubscriptionInfo, getSubscription, generatePaymentLink, redeemPromoCode, activateSubscription } from './subscription.js';
 import { renderWearables, getConnectionStatus, startBreathingCoach } from './wearables.js';
 
-let _currentTab = 'habits';
+let _currentTab = 'fitness';
 let _moreSheetOpen = false;
 
 // ── Patient Profile Helpers ──────────────────────────────────────────
@@ -40,11 +40,11 @@ export function showToast(msg, duration = 2500) {
 
 // ── Navigation Tabs (5 primary: Metas, Fitness, Nutricion, Estres, Mas) ──
 const PRIMARY_TABS = [
-  { id: 'habits',    label: () => 'Metas' },
-  { id: 'fitness',   label: () => t('tab_fitness') },
-  { id: 'nutrition', label: () => t('tab_nutrition') },
-  { id: 'stress',    label: () => t('tab_stress') },
-  { id: 'more',      label: () => 'Mas...' },
+  { id: 'fitness',      label: () => 'Fitness' },
+  { id: 'nutrition',    label: () => 'Nutricion' },
+  { id: 'appointments', label: () => 'Citas' },
+  { id: 'stress',       label: () => 'Bienestar' },
+  { id: 'more',         label: () => 'Mas...' },
 ];
 
 // Icons — outline (inactive) and filled (active) variants
@@ -72,6 +72,7 @@ const ICONS = {
   // Icons for the "More" sheet items
   appointments: {
     outline: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`,
+    filled: `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clip-rule="evenodd"/></svg>`,
   },
   reminders: {
     outline: `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`,
@@ -89,7 +90,7 @@ const CHEVRON_RIGHT = `<svg class="w-5 h-5 text-gray-300" fill="none" stroke="cu
 // ── Build bottom nav (5 tabs) ─────────────────────────────────────────
 function buildNav() {
   const nav = document.querySelector('#bottom-nav > div');
-  const isMoreActive = ['appointments', 'reminders', 'settings', 'wearables'].includes(_currentTab);
+  const isMoreActive = ['habits', 'reminders', 'settings', 'wearables'].includes(_currentTab);
 
   nav.innerHTML = PRIMARY_TABS.map(tab => {
     const isActive = tab.id === 'more'
@@ -142,9 +143,7 @@ function _getWearableStatusDot() {
 
 function getMoreItems() {
   const items = [];
-  if (hasAppointments()) {
-    items.push({ id: 'appointments', icon: ICONS.appointments.outline, label: t('tab_appointments') || 'Citas Medicas' });
-  }
+  items.push({ id: 'habits', icon: ICONS.habits.outline, label: 'Metas' });
   items.push({ id: 'wearables', icon: ICONS.wearables.outline, label: 'Dispositivos' + _getWearableStatusDot() });
   items.push({ id: 'reminders', icon: ICONS.reminders.outline, label: 'Recordatorios' });
   items.push({ id: 'settings',  icon: ICONS.settings.outline,  label: (t('set_title') || 'Configuracion') + _getSubStatusBadge() });
@@ -269,7 +268,7 @@ function renderAuth() {
             </svg>
           </div>
           <h1 class="text-4xl font-black text-white tracking-tight">MiDoctor<span class="text-gradient">Ya</span></h1>
-          <p class="text-white/40 text-sm mt-2 max-w-[240px] mx-auto">Tu plataforma integral de bienestar y salud</p>
+          <p class="text-white/40 text-sm mt-2 max-w-[240px] mx-auto">Fitness & Bienestar</p>
         </div>
 
         <!-- Middle: Features -->
@@ -499,7 +498,7 @@ function _enterApp(authScreen) {
     document.getElementById('app').classList.remove('hidden');
     trackUserActivity();
     buildNav();
-    navigateTo('habits');
+    navigateTo('fitness');
     // Prompt existing users who haven't set allergies
     _checkAllergyPrompt();
     // Background subscription tasks
@@ -1089,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('app').classList.remove('hidden');
         buildNav();
-        navigateTo('habits');
+        navigateTo('fitness');
         _checkAllergyPrompt();
         // Background subscription tasks (non-blocking)
         setTimeout(function() { processSubReminders(); }, 2000);

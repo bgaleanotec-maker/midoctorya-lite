@@ -1,5 +1,5 @@
 // Service Worker — MiDoctorYa Lite PWA (Production)
-const CACHE_NAME = 'doctorya-v20';
+const CACHE_NAME = 'doctorya-v21';
 const API_CACHE = 'doctorya-api-v1';
 
 // Critical assets to precache on install
