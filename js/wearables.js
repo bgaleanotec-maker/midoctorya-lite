@@ -483,23 +483,77 @@ export async function connectDevice(deviceType, scanAll) {
       showToast('Dispositivo no soporta Heart Rate BLE estandar. Usa Puente de Salud (Google Fit).');
     }
 
-    // Handle disconnect with auto-reconnect
-    var stForReconnect = _loadState();
+    // Handle disconnect with aggressive auto-reconnect
+    // The device should stay connected until the user explicitly disconnects
     device.addEventListener('gattserverdisconnected', function () {
       _onDisconnected();
-      if (stForReconnect.settings.continuousMonitoring) {
-        setTimeout(function () {
-          if (_bleDevice && !(_bleDevice.gatt && _bleDevice.gatt.connected)) {
-            showToast('Reconectando...');
+      // Only auto-reconnect if disconnect was unexpected (device ref still held)
+      if (!_bleDevice) return;
+      // Aggressive reconnect: 10 attempts with increasing delays (up to ~2 minutes total)
+      var delays = [500, 1000, 2000, 3000, 5000, 5000, 8000, 10000, 15000, 20000];
+      var attempt = 0;
+      var _reconnecting = true;
+      function tryReconnect() {
+        if (!_bleDevice || !_reconnecting) return; // user manually disconnected
+        if (_bleDevice.gatt && _bleDevice.gatt.connected) {
+          showToast('Dispositivo conectado');
+          return;
+        }
+        if (attempt >= delays.length) {
+          // Final attempt failed — but DON'T give up, schedule periodic retry every 30s
+          showToast('Reintentando conexion...');
+          setTimeout(function periodicRetry() {
+            if (!_bleDevice || !_reconnecting) return;
+            if (_bleDevice.gatt && _bleDevice.gatt.connected) return;
             _bleDevice.gatt.connect().then(function (server) {
               _bleServer = server;
-              showToast('Reconectado a ' + device.name);
+              return server.getPrimaryService(BLE_SERVICES.heart_rate).then(function (hrService) {
+                return hrService.getCharacteristic(DEVICE_PROFILES[_loadState().activeDevice || deviceType].characteristics.heartRate);
+              }).then(function (char) {
+                _hrCharacteristic = char;
+                return char.startNotifications();
+              }).then(function () {
+                _hrCharacteristic.addEventListener('characteristicvaluechanged', _onHeartRateChanged);
+              });
+            }).then(function () {
+              showToast('Reconectado!');
+              startMonitoring('normal');
             }).catch(function () {
-              showToast('Reconexion fallida');
+              // Keep trying every 30 seconds indefinitely until user disconnects
+              setTimeout(periodicRetry, 30000);
             });
+          }, 30000);
+          return;
+        }
+        if (attempt === 0) {
+          showToast('Reconectando dispositivo...');
+        } else if (attempt % 3 === 0) {
+          showToast('Reconectando... (' + (attempt + 1) + '/' + delays.length + ')');
+        }
+        _bleDevice.gatt.connect().then(function (server) {
+          _bleServer = server;
+          return server.getPrimaryService(BLE_SERVICES.heart_rate).then(function (hrService) {
+            return hrService.getCharacteristic(DEVICE_PROFILES[_loadState().activeDevice || deviceType].characteristics.heartRate);
+          }).then(function (char) {
+            _hrCharacteristic = char;
+            return char.startNotifications();
+          }).then(function () {
+            _hrCharacteristic.addEventListener('characteristicvaluechanged', _onHeartRateChanged);
+          });
+        }).then(function () {
+          showToast('Reconectado!');
+          startMonitoring('normal');
+        }).catch(function () {
+          attempt++;
+          if (attempt < delays.length) {
+            setTimeout(tryReconnect, delays[attempt]);
+          } else {
+            // Transition to periodic retry (every 30s)
+            tryReconnect();
           }
-        }, 3000);
+        });
       }
+      setTimeout(tryReconnect, delays[0]);
     });
 
     // Save state
@@ -523,10 +577,11 @@ export async function connectDevice(deviceType, scanAll) {
 
 export function disconnectDevice() {
   _stopMonitoringInternal();
-  if (_bleDevice && _bleDevice.gatt && _bleDevice.gatt.connected) {
-    _bleDevice.gatt.disconnect();
+  var dev = _bleDevice;
+  _bleDevice = null; // Clear ref first so auto-reconnect handler won't fire
+  if (dev && dev.gatt && dev.gatt.connected) {
+    dev.gatt.disconnect();
   }
-  _bleDevice = null;
   _bleServer = null;
   _hrCharacteristic = null;
   var st = _loadState();

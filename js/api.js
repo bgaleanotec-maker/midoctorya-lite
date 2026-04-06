@@ -1,5 +1,6 @@
 /* ── API Client — MiDoctorYa Lite ───────────────────────────────────── */
-const API_BASE = 'http://localhost:5000/api/v1';
+/* Use relative URLs so it works in both dev and production */
+const API_BASE = '/api';
 
 const _cache = new Map();
 function cacheGet(key, ttl = 1800000) {
@@ -15,11 +16,9 @@ async function safeFetch(endpoint, options = {}) {
   try {
     const r = await fetch(`${API_BASE}${endpoint}`, options);
     const data = await r.json();
-    // Guardar en localStorage para uso offline
     try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), data })); } catch (_) { /* quota */ }
     return data;
   } catch (_err) {
-    // Error de red — intentar recuperar del cache de localStorage
     try {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
@@ -31,14 +30,15 @@ async function safeFetch(endpoint, options = {}) {
   }
 }
 
-async function apiGet(endpoint, params = {}) {
-  const url = new URL(`${API_BASE}${endpoint}`);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+async function apiGet(url, params = {}) {
+  const u = new URL(url, window.location.origin);
+  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
   try {
-    const r = await fetch(url);
+    const r = await fetch(u);
+    if (!r.ok) return [];
     return await r.json();
   } catch {
-    return { success: false, error: 'Connection error' };
+    return [];
   }
 }
 
@@ -54,54 +54,46 @@ async function apiPost(endpoint, body = {}) {
   }
 }
 
-// ── Fitness ────────────────────────────────────────────────────────────
+// ── Fitness — uses our own server proxy to ExerciseDB ──────────────────
 async function getBodyParts() {
   const c = cacheGet('bodyparts', 86400000);
   if (c) return c;
-  const r = await apiGet('/fitness/external/bodyparts');
-  const d = r.success ? r.data : [];
-  if (d.length) cacheSet('bodyparts', d);
-  return d;
+  const d = await apiGet('/api/exercises/bodypartlist');
+  if (Array.isArray(d) && d.length) cacheSet('bodyparts', d);
+  return Array.isArray(d) ? d : [];
 }
 
-async function searchExercises(q, limit = 10) {
+async function searchExercises(q, limit = 15) {
   const k = `search:${q}:${limit}`;
   const c = cacheGet(k);
   if (c) return c;
-  const r = await apiGet('/fitness/external/search', { q, limit });
-  const d = r.success ? r.data : [];
-  if (d.length) cacheSet(k, d);
-  return d;
+  const d = await apiGet('/api/exercises/search', { q, limit });
+  if (Array.isArray(d) && d.length) cacheSet(k, d);
+  return Array.isArray(d) ? d : [];
 }
 
-async function getExercisesByBodyPart(bp, limit = 10) {
+async function getExercisesByBodyPart(bp, limit = 15) {
   const k = `bp:${bp}:${limit}`;
   const c = cacheGet(k);
   if (c) return c;
-  const r = await apiGet(`/fitness/external/bodypart/${bp}`, { limit });
-  const d = r.success ? r.data : [];
-  if (d.length) cacheSet(k, d);
-  return d;
+  const d = await apiGet(`/api/exercises/bodypart/${encodeURIComponent(bp)}`, { limit });
+  if (Array.isArray(d) && d.length) cacheSet(k, d);
+  return Array.isArray(d) ? d : [];
 }
 
 async function getExerciseDetail(id) {
-  const r = await apiGet(`/fitness/external/exercise/${id}`);
-  return r.success ? r.data : null;
+  return null; // detail fetched from exercise list data
 }
 
 async function getRecommendations(gender = 'male', limit = 12) {
-  const k = `rec:${gender}:${limit}`;
-  const c = cacheGet(k);
-  if (c) return c;
-  const r = await apiGet('/fitness/external/recommend', { gender, limit });
-  const d = r.success ? r.data : {};
-  if (Object.keys(d).length) cacheSet(k, d);
-  return d;
+  // No separate recommendations endpoint — return empty to trigger bodypart fallback
+  return {};
 }
 
 async function getSimilarByTarget(target, limit = 6) {
-  const r = await apiGet(`/fitness/external/target/${target}`, { limit });
-  return r.success ? r.data : [];
+  // Use search with target name
+  const d = await apiGet('/api/exercises/search', { q: target, limit });
+  return Array.isArray(d) ? d : [];
 }
 
 // ── Stress ─────────────────────────────────────────────────────────────

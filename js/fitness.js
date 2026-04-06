@@ -7,7 +7,8 @@ import { showToast } from './app.js';
    Use them directly if they start with http, otherwise treat as local path. */
 function _gifSrc(gifUrl) {
   if (!gifUrl) return '';
-  if (gifUrl.startsWith('http')) return gifUrl;
+  // Accept both absolute URLs and our proxy paths
+  if (gifUrl.startsWith('http') || gifUrl.startsWith('/api/')) return gifUrl;
   // Relative/local path — use as-is for local fallback assets
   return gifUrl;
 }
@@ -239,41 +240,43 @@ const BP_COLORS = {
 };
 
 /* ── Ejercicios locales — fallback offline ──────────────────────────── */
+/* GIF source: Our server proxy to ExerciseDB API */
+const _GIFBASE = '/api/exercise-image/';
 const LOCAL_EXERCISES = [
   // ── Pecho (5) ──
-  { id: 'local_pecho_01', name: 'Flexion de pecho', bodyPart: 'chest', equipment: 'body weight', target: 'pectorals', gifUrl: '',
+  { id: '0662', name: 'Flexion de pecho', bodyPart: 'chest', equipment: 'body weight', target: 'pectorals', gifUrl: _GIFBASE + '0662',
     instructions: ['Coloca las manos en el suelo separadas al ancho de los hombros.', 'Baja el cuerpo doblando los codos hasta que el pecho casi toque el piso.', 'Empuja hacia arriba hasta extender los brazos completamente.', 'Repite el movimiento de forma controlada.'] },
-  { id: 'local_pecho_02', name: 'Press de banca con mancuernas', bodyPart: 'chest', equipment: 'dumbbell', target: 'pectorals', gifUrl: '',
+  { id: '0025', name: 'Press de banca con mancuernas', bodyPart: 'chest', equipment: 'dumbbell', target: 'pectorals', gifUrl: _GIFBASE + '0025',
     instructions: ['Acuestate en un banco plano con una mancuerna en cada mano a la altura del pecho.', 'Empuja las mancuernas hacia arriba extendiendo los brazos.', 'Baja lentamente hasta que los codos esten a 90 grados.', 'Repite el numero deseado de repeticiones.'] },
-  { id: 'local_pecho_03', name: 'Aperturas con mancuernas', bodyPart: 'chest', equipment: 'dumbbell', target: 'pectorals', gifUrl: '',
+  { id: '0294', name: 'Aperturas con mancuernas', bodyPart: 'chest', equipment: 'dumbbell', target: 'pectorals', gifUrl: _GIFBASE + '0294',
     instructions: ['Acuestate en banco plano con mancuernas sobre el pecho y brazos extendidos.', 'Abre los brazos hacia los lados con los codos ligeramente flexionados.', 'Baja hasta sentir un estiramiento en el pecho.', 'Regresa a la posicion inicial apretando los pectorales.'] },
-  { id: 'local_pecho_04', name: 'Fondo de pecho', bodyPart: 'chest', equipment: 'body weight', target: 'pectorals', gifUrl: '',
+  { id: '0251', name: 'Fondo de pecho', bodyPart: 'chest', equipment: 'body weight', target: 'pectorals', gifUrl: _GIFBASE + '0251',
     instructions: ['Sujetate de las barras paralelas con los brazos extendidos.', 'Inclina el torso ligeramente hacia adelante.', 'Baja el cuerpo doblando los codos hasta que los brazos esten a 90 grados.', 'Empujate hacia arriba a la posicion inicial.'] },
-  { id: 'local_pecho_05', name: 'Press inclinado con barra', bodyPart: 'chest', equipment: 'barbell', target: 'pectorals', gifUrl: '',
+  { id: '0047', name: 'Press inclinado con barra', bodyPart: 'chest', equipment: 'barbell', target: 'pectorals', gifUrl: _GIFBASE + '0047',
     instructions: ['Acuestate en un banco inclinado a 30-45 grados y agarra la barra al ancho de los hombros.', 'Baja la barra controladamente hasta el pecho superior.', 'Empuja la barra hacia arriba hasta extender los brazos.'] },
 
   // ── Piernas (5) ──
-  { id: 'local_pierna_01', name: 'Sentadilla con barra', bodyPart: 'upper legs', equipment: 'barbell', target: 'quads', gifUrl: '',
+  { id: '0043', name: 'Sentadilla con barra', bodyPart: 'upper legs', equipment: 'barbell', target: 'quads', gifUrl: _GIFBASE + '0043',
     instructions: ['Coloca la barra sobre los trapecios y separa los pies al ancho de los hombros.', 'Flexiona las rodillas y caderas bajando como si te sentaras.', 'Baja hasta que los muslos esten paralelos al suelo.', 'Empuja con los talones para regresar a la posicion inicial.'] },
-  { id: 'local_pierna_02', name: 'Zancada con mancuernas', bodyPart: 'upper legs', equipment: 'dumbbell', target: 'quads', gifUrl: '',
+  { id: '0291', name: 'Zancada con mancuernas', bodyPart: 'upper legs', equipment: 'dumbbell', target: 'quads', gifUrl: _GIFBASE + '0291',
     instructions: ['De pie con una mancuerna en cada mano, da un paso largo hacia adelante.', 'Flexiona ambas rodillas hasta que la rodilla trasera casi toque el suelo.', 'Empuja con el pie delantero para volver a la posicion inicial.', 'Alterna las piernas en cada repeticion.'] },
-  { id: 'local_pierna_03', name: 'Peso muerto rumano', bodyPart: 'upper legs', equipment: 'barbell', target: 'hamstrings', gifUrl: '',
+  { id: '0085', name: 'Peso muerto rumano', bodyPart: 'upper legs', equipment: 'barbell', target: 'hamstrings', gifUrl: _GIFBASE + '0085',
     instructions: ['De pie con la barra frente a los muslos y rodillas ligeramente flexionadas.', 'Inclinate hacia adelante desde las caderas manteniendo la espalda recta.', 'Baja la barra hasta sentir un estiramiento en los isquiotibiales.', 'Regresa a la posicion inicial apretando los gluteos.'] },
-  { id: 'local_pierna_04', name: 'Prensa de piernas', bodyPart: 'upper legs', equipment: 'machine', target: 'quads', gifUrl: '',
+  { id: '0738', name: 'Prensa de piernas', bodyPart: 'upper legs', equipment: 'machine', target: 'quads', gifUrl: _GIFBASE + '0738',
     instructions: ['Sientate en la maquina de prensa con los pies separados al ancho de los hombros.', 'Baja la plataforma doblando las rodillas hasta 90 grados.', 'Empuja la plataforma extendiendo las piernas sin bloquear las rodillas.'] },
-  { id: 'local_pierna_05', name: 'Elevacion de pantorrillas', bodyPart: 'lower legs', equipment: 'body weight', target: 'calves', gifUrl: '',
+  { id: '1373', name: 'Elevacion de pantorrillas', bodyPart: 'lower legs', equipment: 'body weight', target: 'calves', gifUrl: _GIFBASE + '1373',
     instructions: ['De pie con las puntas de los pies en el borde de un escalon.', 'Baja los talones por debajo del nivel del escalon para estirar.', 'Sube empujando con las puntas de los pies lo mas alto posible.', 'Manten la contraccion arriba por un segundo y repite.'] },
 
   // ── Espalda (5) ──
-  { id: 'local_espalda_01', name: 'Dominada', bodyPart: 'back', equipment: 'body weight', target: 'lats', gifUrl: '',
+  { id: '0651', name: 'Dominada', bodyPart: 'back', equipment: 'body weight', target: 'lats', gifUrl: _GIFBASE + '0651',
     instructions: ['Agarra la barra con las manos separadas al ancho de los hombros y agarre prono.', 'Desde la posicion colgante, jala tu cuerpo hacia arriba hasta que la barbilla supere la barra.', 'Baja de forma controlada hasta extender los brazos completamente.'] },
-  { id: 'local_espalda_02', name: 'Remo inclinado con barra', bodyPart: 'back', equipment: 'barbell', target: 'upper back', gifUrl: '',
+  { id: '0027', name: 'Remo inclinado con barra', bodyPart: 'back', equipment: 'barbell', target: 'upper back', gifUrl: _GIFBASE + '0027',
     instructions: ['Inclinate hacia adelante con la espalda recta y agarra la barra al ancho de los hombros.', 'Jala la barra hacia el abdomen apretando los omoplatos.', 'Baja la barra de forma controlada hasta extender los brazos.', 'Manten el core apretado durante todo el movimiento.'] },
-  { id: 'local_espalda_03', name: 'Jalon al pecho con cable', bodyPart: 'back', equipment: 'cable', target: 'lats', gifUrl: '',
+  { id: '0160', name: 'Jalon al pecho con cable', bodyPart: 'back', equipment: 'cable', target: 'lats', gifUrl: _GIFBASE + '0160',
     instructions: ['Sientate en la maquina y agarra la barra ancha con agarre prono.', 'Jala la barra hacia el pecho superior manteniendo el torso ligeramente inclinado.', 'Aprieta los omoplatos al final del movimiento.', 'Regresa la barra arriba de forma controlada.'] },
-  { id: 'local_espalda_04', name: 'Remo con mancuerna', bodyPart: 'back', equipment: 'dumbbell', target: 'upper back', gifUrl: '',
+  { id: '0293', name: 'Remo con mancuerna', bodyPart: 'back', equipment: 'dumbbell', target: 'upper back', gifUrl: _GIFBASE + '0293',
     instructions: ['Apoya una rodilla y una mano en el banco, sosteniendo la mancuerna con la otra mano.', 'Jala la mancuerna hacia la cadera manteniendo el codo cerca del cuerpo.', 'Baja la mancuerna de forma controlada.', 'Completa las repeticiones y cambia de lado.'] },
-  { id: 'local_espalda_05', name: 'Peso muerto con barra', bodyPart: 'back', equipment: 'barbell', target: 'spine', gifUrl: '',
+  { id: '0032', name: 'Peso muerto con barra', bodyPart: 'back', equipment: 'barbell', target: 'spine', gifUrl: _GIFBASE + '0032',
     instructions: ['De pie frente a la barra con los pies al ancho de las caderas.', 'Agarra la barra, manten la espalda recta y el pecho arriba.', 'Levanta la barra extendiendo las piernas y caderas simultaneamente.', 'Baja la barra de forma controlada hasta el suelo.'] },
 ];
 
@@ -606,7 +609,7 @@ function _renderCards(listDiv, container) {
   listDiv.innerHTML = _exercises.map((ex, i) => {
     var gifSrc = ex.gifUrl ? _gifSrc(ex.gifUrl) : '';
     var gifHtml = '';
-    if (gifSrc && gifSrc.startsWith('http')) {
+    if (gifSrc && (gifSrc.startsWith('http') || gifSrc.startsWith('/api/'))) {
       gifHtml = '<img src="' + gifSrc + '" alt="' + (ex.name || '') + '" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML=\'<div class=\\\'flex items-center justify-center h-full text-4xl bg-gray-100\\\'>💪</div>\'">';
     } else {
       gifHtml = '<div class="flex items-center justify-center h-full text-4xl bg-gradient-to-br from-primary/10 to-purple-100">💪</div>';
@@ -658,7 +661,7 @@ async function _showDetail(ex, rootContainer) {
 
       <!-- GIF -->
       <div class="mx-4 mt-4 rounded-2xl overflow-hidden shadow-md bg-gradient-to-br from-gray-50 to-gray-100" style="height: 240px">
-        ${(ex.gifUrl && _gifSrc(ex.gifUrl).startsWith('http'))
+        ${(ex.gifUrl && (_gifSrc(ex.gifUrl).startsWith('http') || _gifSrc(ex.gifUrl).startsWith('/api/')))
           ? `<img src="${_gifSrc(ex.gifUrl)}" alt="${ex.name}" class="w-full h-full object-contain" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-purple-50\\'>💪</div>'">`
           : `<div class="w-full h-full flex items-center justify-center text-6xl bg-gradient-to-br from-primary/10 to-purple-50">💪</div>`}
       </div>

@@ -1,5 +1,5 @@
 // Service Worker — MiDoctorYa Lite PWA (Production)
-const CACHE_NAME = 'doctorya-v21';
+const CACHE_NAME = 'doctorya-v23';
 const API_CACHE = 'doctorya-api-v1';
 
 // Critical assets to precache on install
@@ -64,6 +64,25 @@ self.addEventListener('fetch', function(event) {
 
   // Skip cross-origin requests
   if (url.origin !== self.location.origin) return;
+
+  // Exercise image proxy: cache-first (GIFs are large and rarely change)
+  if (url.pathname.startsWith('/api/exercise-image/')) {
+    event.respondWith(
+      caches.match(event.request).then(function(cached) {
+        if (cached) return cached;
+        return fetch(event.request).then(function(response) {
+          if (response.ok) {
+            var clone = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(event.request, clone);
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
 
   // API requests: network-only (no cache)
   if (url.pathname.startsWith('/api/')) {

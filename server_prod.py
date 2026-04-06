@@ -30,8 +30,14 @@ app.config['ULTRAMSG_TOKEN'] = os.getenv('ULTRAMSG_TOKEN', '')
 app.config['GOOGLE_FIT_CLIENT_ID'] = os.getenv('GOOGLE_FIT_CLIENT_ID', '')
 app.config['GOOGLE_FIT_CLIENT_SECRET'] = os.getenv('GOOGLE_FIT_CLIENT_SECRET', '')
 app.config['ADMIN_PIN'] = os.getenv('ADMIN_PIN', '1234')
+app.config['RAPIDAPI_KEY'] = os.getenv('RAPIDAPI_KEY', '0e15f14aa4msha719348cf83dae0p190e27jsn1e203bc962f4')
 
 MP_API_BASE = 'https://api.mercadopago.com'
+EXERCISEDB_HOST = 'exercisedb.p.rapidapi.com'
+
+# In-memory cache for exercise images (exercise_id -> bytes)
+_image_cache = {}
+_IMAGE_CACHE_MAX = 100  # max cached images
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -667,6 +673,153 @@ def googlefit_data():
     except Exception as e:
         logger.exception('googlefit_data error')
         return jsonify({'error': str(e)}), 500
+
+
+# ===========================================================================
+# ExerciseDB Image Proxy — serves GIF images from ExerciseDB API
+# ===========================================================================
+@app.route('/api/exercise-image/<exercise_id>')
+def exercise_image_proxy(exercise_id):
+    """GET /api/exercise-image/<id> — Proxy to fetch exercise GIF from ExerciseDB API.
+    Caches images in memory to reduce API calls."""
+    # Validate exercise_id (must be 4 digits)
+    if not exercise_id or len(exercise_id) != 4 or not exercise_id.isdigit():
+        return jsonify({'error': 'Invalid exercise ID'}), 400
+
+    # Check cache first
+    if exercise_id in _image_cache:
+        resp = make_response(_image_cache[exercise_id])
+        resp.headers['Content-Type'] = 'image/gif'
+        resp.headers['Cache-Control'] = 'public, max-age=604800, immutable'  # 7 days
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+
+    # Fetch from ExerciseDB API
+    api_key = app.config['RAPIDAPI_KEY']
+    if not api_key:
+        return jsonify({'error': 'RapidAPI key not configured'}), 500
+
+    try:
+        api_resp = http_requests.get(
+            f'https://{EXERCISEDB_HOST}/image',
+            params={'exerciseId': exercise_id, 'resolution': '720'},
+            headers={
+                'x-rapidapi-host': EXERCISEDB_HOST,
+                'x-rapidapi-key': api_key
+            },
+            timeout=30,
+            stream=True
+        )
+
+        if api_resp.status_code != 200:
+            logger.warning(f'[ExerciseDB] Image {exercise_id} returned {api_resp.status_code}')
+            return jsonify({'error': 'Image not found'}), 404
+
+        image_data = api_resp.content
+
+        # Cache the image (evict oldest if full)
+        if len(_image_cache) >= _IMAGE_CACHE_MAX:
+            oldest = next(iter(_image_cache))
+            del _image_cache[oldest]
+        _image_cache[exercise_id] = image_data
+
+        resp = make_response(image_data)
+        resp.headers['Content-Type'] = 'image/gif'
+        resp.headers['Cache-Control'] = 'public, max-age=604800, immutable'
+        resp.headers['Access-Control-Allow-Origin'] = '*'
+        return resp
+
+    except Exception as e:
+        logger.exception(f'exercise_image_proxy error for {exercise_id}')
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/exercises/search')
+@rate_limit(max_per_minute=30)
+def exercises_search():
+    """GET /api/exercises/search?q=push+up&limit=15 — Search exercises via ExerciseDB API."""
+    api_key = app.config['RAPIDAPI_KEY']
+    if not api_key:
+        return jsonify([])
+
+    q = request.args.get('q', '')
+    limit = request.args.get('limit', '15')
+    if not q:
+        return jsonify([])
+
+    try:
+        resp = http_requests.get(
+            f'https://{EXERCISEDB_HOST}/exercises/name/{q}',
+            params={'limit': limit, 'offset': '0'},
+            headers={
+                'x-rapidapi-host': EXERCISEDB_HOST,
+                'x-rapidapi-key': api_key
+            },
+            timeout=15
+        )
+        resp.raise_for_status()
+        exercises = resp.json()
+        # Add our proxy gifUrl
+        for ex in exercises:
+            ex['gifUrl'] = f'/api/exercise-image/{ex.get("id", "0000")}'
+        return jsonify(exercises)
+    except Exception as e:
+        logger.warning(f'exercises_search error: {e}')
+        return jsonify([])
+
+
+@app.route('/api/exercises/bodypart/<body_part>')
+@rate_limit(max_per_minute=30)
+def exercises_by_bodypart(body_part):
+    """GET /api/exercises/bodypart/<part>?limit=15 — Get exercises by body part."""
+    api_key = app.config['RAPIDAPI_KEY']
+    if not api_key:
+        return jsonify([])
+
+    limit = request.args.get('limit', '15')
+
+    try:
+        resp = http_requests.get(
+            f'https://{EXERCISEDB_HOST}/exercises/bodyPart/{body_part}',
+            params={'limit': limit, 'offset': '0'},
+            headers={
+                'x-rapidapi-host': EXERCISEDB_HOST,
+                'x-rapidapi-key': api_key
+            },
+            timeout=15
+        )
+        resp.raise_for_status()
+        exercises = resp.json()
+        for ex in exercises:
+            ex['gifUrl'] = f'/api/exercise-image/{ex.get("id", "0000")}'
+        return jsonify(exercises)
+    except Exception as e:
+        logger.warning(f'exercises_by_bodypart error: {e}')
+        return jsonify([])
+
+
+@app.route('/api/exercises/bodypartlist')
+@rate_limit(max_per_minute=10)
+def exercises_bodypart_list():
+    """GET /api/exercises/bodypartlist — Get list of body parts."""
+    api_key = app.config['RAPIDAPI_KEY']
+    if not api_key:
+        return jsonify(['chest', 'back', 'shoulders', 'upper legs', 'upper arms', 'waist', 'cardio', 'lower legs', 'lower arms', 'neck'])
+
+    try:
+        resp = http_requests.get(
+            f'https://{EXERCISEDB_HOST}/exercises/bodyPartList',
+            headers={
+                'x-rapidapi-host': EXERCISEDB_HOST,
+                'x-rapidapi-key': api_key
+            },
+            timeout=15
+        )
+        resp.raise_for_status()
+        return jsonify(resp.json())
+    except Exception as e:
+        logger.warning(f'exercises_bodypart_list error: {e}')
+        return jsonify(['chest', 'back', 'shoulders', 'upper legs', 'upper arms', 'waist', 'cardio', 'lower legs', 'lower arms', 'neck'])
 
 
 # ===========================================================================

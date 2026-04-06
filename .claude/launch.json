@@ -4,7 +4,7 @@
     {
       "name": "midoctorya",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["server.py"],
+      "runtimeArgs": ["server_prod.py"],
       "port": 8081
     }
   ]

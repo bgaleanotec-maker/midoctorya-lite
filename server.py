@@ -26,6 +26,12 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(DIR)
 
 MP_API_BASE = 'https://api.mercadopago.com'
+EXERCISEDB_HOST = 'exercisedb.p.rapidapi.com'
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', '0e15f14aa4msha719348cf83dae0p190e27jsn1e203bc962f4')
+
+# In-memory cache for exercise images
+_image_cache = {}
+_IMAGE_CACHE_MAX = 100
 
 
 class PWAHandler(SimpleHTTPRequestHandler):
@@ -58,7 +64,15 @@ class PWAHandler(SimpleHTTPRequestHandler):
             self.send_error(404, 'Not found')
 
     def do_GET(self):
-        if self.path.startswith('/api/mp/balance'):
+        if self.path.startswith('/api/exercise-image/'):
+            self._handle_exercise_image()
+        elif self.path.startswith('/api/exercises/bodypartlist'):
+            self._handle_bodypart_list()
+        elif self.path.startswith('/api/exercises/bodypart/'):
+            self._handle_exercises_by_bodypart()
+        elif self.path.startswith('/api/exercises/search'):
+            self._handle_exercises_search()
+        elif self.path.startswith('/api/mp/balance'):
             self._handle_mp_balance()
         elif self.path.startswith('/api/mp/payments'):
             self._handle_mp_payments()
@@ -86,6 +100,119 @@ class PWAHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.end_headers()
         self.wfile.write(payload)
+
+    def _handle_exercise_image(self):
+        """GET /api/exercise-image/<id> — Proxy to ExerciseDB for exercise GIF images."""
+        try:
+            exercise_id = self.path.split('/api/exercise-image/')[1].split('?')[0]
+            if not exercise_id or len(exercise_id) != 4 or not exercise_id.isdigit():
+                self._send_json(400, {'error': 'Invalid exercise ID'})
+                return
+
+            # Check cache
+            if exercise_id in _image_cache:
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/gif')
+                self.send_header('Cache-Control', 'public, max-age=604800, immutable')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(_image_cache[exercise_id])
+                return
+
+            # Fetch from ExerciseDB API
+            req = urllib.request.Request(
+                'https://' + EXERCISEDB_HOST + '/image?exerciseId=' + exercise_id + '&resolution=720',
+                headers={
+                    'x-rapidapi-host': EXERCISEDB_HOST,
+                    'x-rapidapi-key': RAPIDAPI_KEY
+                }
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                image_data = resp.read()
+
+            # Cache it
+            if len(_image_cache) >= _IMAGE_CACHE_MAX:
+                oldest = next(iter(_image_cache))
+                del _image_cache[oldest]
+            _image_cache[exercise_id] = image_data
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'image/gif')
+            self.send_header('Cache-Control', 'public, max-age=604800, immutable')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(image_data)
+
+        except Exception as e:
+            self._send_json(500, {'error': str(e)})
+
+    def _handle_bodypart_list(self):
+        """GET /api/exercises/bodypartlist — Get list of body parts from ExerciseDB."""
+        try:
+            req = urllib.request.Request(
+                'https://' + EXERCISEDB_HOST + '/exercises/bodyPartList',
+                headers={
+                    'x-rapidapi-host': EXERCISEDB_HOST,
+                    'x-rapidapi-key': RAPIDAPI_KEY
+                }
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read().decode('utf-8'))
+            self._send_json(200, data)
+        except Exception:
+            self._send_json(200, ['chest', 'back', 'shoulders', 'upper legs', 'upper arms', 'waist', 'cardio', 'lower legs', 'lower arms', 'neck'])
+
+    def _handle_exercises_by_bodypart(self):
+        """GET /api/exercises/bodypart/<part>?limit=15 — Get exercises by body part."""
+        try:
+            from urllib.parse import urlparse, parse_qs, quote
+            path_part = self.path.split('/api/exercises/bodypart/')[1].split('?')[0]
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            limit = params.get('limit', ['15'])[0]
+
+            req = urllib.request.Request(
+                'https://' + EXERCISEDB_HOST + '/exercises/bodyPart/' + quote(path_part) + '?limit=' + limit + '&offset=0',
+                headers={
+                    'x-rapidapi-host': EXERCISEDB_HOST,
+                    'x-rapidapi-key': RAPIDAPI_KEY
+                }
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                exercises = json.loads(resp.read().decode('utf-8'))
+            # Add proxy gifUrl
+            for ex in exercises:
+                ex['gifUrl'] = '/api/exercise-image/' + ex.get('id', '0000')
+            self._send_json(200, exercises)
+        except Exception:
+            self._send_json(200, [])
+
+    def _handle_exercises_search(self):
+        """GET /api/exercises/search?q=push+up&limit=15 — Search exercises."""
+        try:
+            from urllib.parse import urlparse, parse_qs, quote
+            parsed = urlparse(self.path)
+            params = parse_qs(parsed.query)
+            q = params.get('q', [''])[0]
+            limit = params.get('limit', ['15'])[0]
+            if not q:
+                self._send_json(200, [])
+                return
+
+            req = urllib.request.Request(
+                'https://' + EXERCISEDB_HOST + '/exercises/name/' + quote(q) + '?limit=' + limit + '&offset=0',
+                headers={
+                    'x-rapidapi-host': EXERCISEDB_HOST,
+                    'x-rapidapi-key': RAPIDAPI_KEY
+                }
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                exercises = json.loads(resp.read().decode('utf-8'))
+            for ex in exercises:
+                ex['gifUrl'] = '/api/exercise-image/' + ex.get('id', '0000')
+            self._send_json(200, exercises)
+        except Exception:
+            self._send_json(200, [])
 
     def _handle_mp_balance(self):
         """GET /api/mp/balance?access_token=YYY — Fetch MP account balance info."""
