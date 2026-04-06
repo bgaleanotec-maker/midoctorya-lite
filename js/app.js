@@ -253,16 +253,16 @@ function renderAuth() {
   const authScreen = document.getElementById('auth-screen');
   authScreen.classList.remove('hidden');
   authScreen.innerHTML = `
-    <div class="gradient-landing min-h-screen flex flex-col relative overflow-hidden">
+    <div class="gradient-landing min-h-screen flex flex-col relative overflow-x-hidden overflow-y-auto">
       <!-- Decorative circles -->
-      <div class="absolute top-[-20%] right-[-15%] w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-[-10%] left-[-10%] w-56 h-56 bg-purple-500/10 rounded-full blur-3xl"></div>
-      <div class="absolute top-[30%] left-[-5%] w-32 h-32 bg-blue-500/5 rounded-full blur-2xl"></div>
+      <div class="absolute top-[-20%] right-[-15%] w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute bottom-[-10%] left-[-10%] w-56 h-56 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute top-[30%] left-[-5%] w-32 h-32 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
       <!-- Content -->
-      <div class="flex-1 flex flex-col justify-between px-6 py-8 relative z-10">
+      <div class="flex-1 flex flex-col justify-start px-6 py-8 relative z-10">
         <!-- Top: Logo + Tagline -->
-        <div class="pt-12 text-center animate-fade-in">
+        <div class="pt-8 text-center animate-fade-in">
           <div class="w-20 h-20 mx-auto mb-5 rounded-2xl gradient-primary shadow-2xl shadow-primary/30 flex items-center justify-center animate-float">
             <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
@@ -273,26 +273,22 @@ function renderAuth() {
         </div>
 
         <!-- Middle: Features -->
-        <div class="my-8 grid grid-cols-2 gap-3 animate-slide-up" style="animation-delay:200ms">
-          <div class="glass rounded-2xl p-4 text-center">
-            <div class="text-2xl mb-2">✅</div>
-            <p class="text-white text-xs font-semibold">Habitos</p>
-            <p class="text-white/30 text-[10px] mt-0.5">Metas basadas en ciencia</p>
+        <div class="my-5 grid grid-cols-4 gap-2 animate-slide-up" style="animation-delay:200ms">
+          <div class="glass rounded-xl p-2.5 text-center">
+            <div class="text-lg mb-1">✅</div>
+            <p class="text-white text-[10px] font-semibold">Habitos</p>
           </div>
-          <div class="glass rounded-2xl p-4 text-center">
-            <div class="text-2xl mb-2">💪</div>
-            <p class="text-white text-xs font-semibold">Fitness</p>
-            <p class="text-white/30 text-[10px] mt-0.5">1300+ ejercicios 3D</p>
+          <div class="glass rounded-xl p-2.5 text-center">
+            <div class="text-lg mb-1">💪</div>
+            <p class="text-white text-[10px] font-semibold">Fitness</p>
           </div>
-          <div class="glass rounded-2xl p-4 text-center">
-            <div class="text-2xl mb-2">🥗</div>
-            <p class="text-white text-xs font-semibold">Nutricion</p>
-            <p class="text-white/30 text-[10px] mt-0.5">Analisis con IA</p>
+          <div class="glass rounded-xl p-2.5 text-center">
+            <div class="text-lg mb-1">🥗</div>
+            <p class="text-white text-[10px] font-semibold">Nutricion</p>
           </div>
-          <div class="glass rounded-2xl p-4 text-center">
-            <div class="text-2xl mb-2">🧘</div>
-            <p class="text-white text-xs font-semibold">Bienestar</p>
-            <p class="text-white/30 text-[10px] mt-0.5">Manejo del estres</p>
+          <div class="glass rounded-xl p-2.5 text-center">
+            <div class="text-lg mb-1">🧘</div>
+            <p class="text-white text-[10px] font-semibold">Bienestar</p>
           </div>
         </div>
 
@@ -373,6 +369,7 @@ function renderAuth() {
           <button id="auth-skip" class="w-full text-center mt-4 text-white/30 text-xs py-2 active:text-white/50 transition">
             Explorar sin cuenta
           </button>
+          <div class="pb-8"></div>
         </div>
       </div>
     </div>

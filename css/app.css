@@ -392,6 +392,18 @@ input:focus, textarea:focus {
 }
 
 /* ── Auth Form Inputs ──────────────────────────────────────────── */
+/* ── Auth Screen Scroll Fix ────────────────────────────────────── */
+#auth-screen {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+#auth-screen > div {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
 .auth-input {
   width: 100%;
   background: rgba(255,255,255,0.06);
